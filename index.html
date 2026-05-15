@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IS-A-BUILDER: conversor de texto a datos estructurados</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f0f2f6;
+            color: #1f1f1f;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── Sidebar ── */
+        #sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: white;
+            border-right: 1px solid #e0e0e0;
+            padding: 1.25rem 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .logo-img {
+            max-width: 100%;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border: 1px solid #b3d9f7;
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .info-box a { color: #0366d6; }
+
+        .s-section { margin-top: 1.1rem; }
+
+        .s-section h3 {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+        }
+
+        .s-section label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.88rem;
+            margin-bottom: 0.35rem;
+            cursor: pointer;
+        }
+
+        .field-label {
+            font-size: 0.8rem;
+            color: #555;
+            margin: 0.55rem 0 0.2rem;
+        }
+
+        .s-section input[type="text"] {
+            width: 100%;
+            padding: 0.38rem 0.55rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        hr { border: none; border-top: 1px solid #e6e6e6; margin: 1rem 0; }
+
+        /* ── Main ── */
+        #main {
+            flex: 1;
+            padding: 2rem 2.5rem;
+            max-width: 960px;
+        }
+
+        .app-title {
+            font-size: 1.55rem;
+            font-weight: 700;
+            margin-bottom: 0.2rem;
+        }
+
+        .app-caption {
+            color: #999;
+            font-size: 0.82rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .description {
+            background: white;
+            border-radius: 8px;
+            padding: 1.1rem 1.3rem;
+            font-size: 0.91rem;
+            line-height: 1.65;
+            border: 1px solid #e8e8e8;
+            margin-bottom: 1.5rem;
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+            font-size: 0.88em;
+        }
+
+        /* ── Tabs ── */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 1rem;
+        }
+
+        .tab-btn {
+            padding: 0.55rem 1.1rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 0.93rem;
+            color: #777;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.15s;
+        }
+
+        .tab-btn.active {
+            color: #e63946;
+            border-bottom-color: #e63946;
+            font-weight: 600;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* ── Upload area ── */
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            background: white;
+            transition: border-color 0.2s, background 0.2s;
+            user-select: none;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over { border-color: #e63946; background: #fff5f5; }
+
+        .upload-area input[type="file"] { display: none; }
+
+        .upload-icon { font-size: 2.2rem; margin-bottom: 0.4rem; }
+
+        .upload-area p { color: #666; font-size: 0.88rem; margin-top: 0.2rem; }
+
+        #file-list {
+            margin-top: 0.6rem;
+            font-size: 0.83rem;
+            color: #555;
+            line-height: 1.7;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 0.7rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-family: inherit;
+            resize: vertical;
+            background: white;
+        }
+
+        /* ── Process button ── */
+        .btn-process {
+            display: block;
+            width: 100%;
+            padding: 0.72rem;
+            background: #e63946;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.97rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: background 0.2s;
+        }
+
+        .btn-process:hover { background: #c62b36; }
+
+        /* ── Banners ── */
+        .success-box {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            color: #155724;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-banner {
+            background: #cce5ff;
+            border: 1px solid #b8daff;
+            border-radius: 6px;
+            padding: 0.7rem 1rem;
+            color: #004085;
+            font-size: 0.88rem;
+        }
+
+        /* ── Metrics ── */
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-card {
+            background: white;
+            border: 1px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .metric-value { font-size: 1.75rem; font-weight: 700; }
+        .metric-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.06em; }
+
+        .ttr-help {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ddd;
+            color: #666;
+            font-size: 0.65rem;
+            font-weight: 700;
+            cursor: help;
+            vertical-align: middle;
+            margin-left: 3px;
+        }
+        .ttr-help:hover { background: #e63946; color: white; }
+
+        /* ── Frequency bars ── */
+        .freq-section { margin-top: 1.5rem; }
+        .freq-row {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.35rem;
+            font-size: 0.82rem;
+        }
+        .freq-word {
+            min-width: 130px;
+            max-width: 130px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: #333;
+        }
+        .freq-bar-bg {
+            flex: 1;
+            background: #f0f0f0;
+            border-radius: 3px;
+            height: 8px;
+        }
+        .freq-bar {
+            height: 8px;
+            background: #e63946;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .freq-count { color: #bbb; font-size: 0.75rem; min-width: 28px; text-align: right; }
+
+        /* ── Table ── */
+        .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; }
+
+        .table-wrap {
+            overflow-x: auto;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e8e8e8;
+            margin-bottom: 0.5rem;
+        }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
+
+        th {
+            background: #f8f9fa;
+            padding: 0.55rem 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #e0e0e0;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 0.45rem 0.75rem;
+            border-bottom: 1px solid #f2f2f2;
+            max-width: 280px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: #fafafa; }
+
+        td[contenteditable] { cursor: text; }
+        td[contenteditable]:hover { background: #fffdf0; }
+        td[contenteditable]:focus {
+            outline: none;
+            background: #fffbe6;
+            box-shadow: inset 0 0 0 1px #f0c040;
+            white-space: normal;
+            overflow: visible;
+            max-width: none;
+        }
+
+        .table-note { font-size: 0.78rem; color: #aaa; margin-bottom: 1.3rem; }
+
+        /* ── Export buttons ── */
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.7rem;
+        }
+
+        .btn-export {
+            padding: 0.6rem;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.18s;
+        }
+
+        .btn-export:hover {
+            background: #e63946;
+            color: white;
+            border-color: #e63946;
+        }
+
+        .btn-export-stats {
+            display: block;
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px dashed #ccc;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 0.82rem;
+            color: #777;
+            margin-top: 0.55rem;
+            transition: all 0.18s;
+        }
+        .btn-export-stats:hover { border-color: #e63946; color: #e63946; background: #fff5f5; }
+
+        .divider { border: none; border-top: 1px solid #e6e6e6; margin: 1.5rem 0; }
+
+        /* ── About button ── */
+        .about-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 0.2rem 0.7rem;
+            font-size: 0.78rem;
+            color: #888;
+            cursor: pointer;
+            margin-left: 0.6rem;
+            vertical-align: middle;
+            transition: all 0.15s;
+        }
+        .about-btn:hover { border-color: #e63946; color: #e63946; }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.open { display: flex; }
+
+        .modal-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem 2.2rem;
+            max-width: 620px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1.2rem;
+            background: none;
+            border: none;
+            font-size: 1.3rem;
+            cursor: pointer;
+            color: #aaa;
+            line-height: 1;
+        }
+        .modal-close:hover { color: #e63946; }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.3rem;
+        }
+
+        .name-layer {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .name-tag {
+            background: #e63946;
+            color: white;
+            font-weight: 700;
+            font-size: 0.78rem;
+            border-radius: 4px;
+            padding: 0.2rem 0.5rem;
+            white-space: nowrap;
+            margin-top: 0.1rem;
+            flex-shrink: 0;
+        }
+        .name-tag.alt { background: #444; }
+        .name-tag.soft { background: #888; }
+
+        .name-layer p {
+            font-size: 0.88rem;
+            line-height: 1.55;
+            color: #333;
+        }
+        .name-layer p strong { color: #111; }
+
+        .modal-section {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin: 1.4rem 0 0.7rem;
+        }
+
+        .bio-text {
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ SIDEBAR ══════════════════════════════ -->
+<div id="sidebar">
+    <img src="logo.png" alt="IS-A-BUILDER" class="logo-img" onerror="this.style.display='none'">
+
+    <div class="info-box">
+        <strong>Cómo citar:</strong><br><br>
+        Moyano Moreno, I. (2026). <em>IS-A-BUILDER: conversor de texto a datos estructurados</em>. [Software].
+        <a href="https://doi.org/10.5281/zenodo.18494400" target="_blank">https://doi.org/10.5281/zenodo.18494400</a>
+    </div>
+
+    <hr>
+
+    <div class="s-section">
+        <h3>⚙️ Configuración</h3>
+    </div>
+
+    <div class="s-section">
+        <h3>Dataset</h3>
+        <label>
+            <input type="checkbox" id="segment-sentences" checked>
+            Tokenización por oraciones
+        </label>
+    </div>
+
+    <div class="s-section">
+        <h3>🧽 Preprocesamiento</h3>
+        <label><input type="checkbox" id="do-lowercase"> Normalizar a minúscula</label>
+        <label><input type="checkbox" id="do-remove-punct"> Eliminar puntuación</label>
+    </div>
+
+    <div class="s-section">
+        <h3>📋 Estructura</h3>
+        <div class="field-label">Etiqueta de contenido (key)</div>
+        <input type="text" id="content-key" value="texto">
+
+        <div class="field-label">Etiquetas de metadatos</div>
+        <input type="text" id="labels-input" value="sentimiento, categoria">
+
+        <div class="field-label">Nombre del archivo de salida</div>
+        <input type="text" id="output-name" value="dataset_procesado">
+    </div>
+</div>
+
+<!-- ══════════════════════════════ ABOUT MODAL ══════════════════════════════ -->
+<div id="about-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box">
+        <button class="modal-close" onclick="document.getElementById('about-modal').classList.remove('open')">✕</button>
+
+        <div class="modal-title">IS-A-BUILDER</div>
+
+        <div class="modal-section">El nombre</div>
+
+        <div class="name-layer">
+            <span class="name-tag">IS-A</span>
+            <p><strong>Una relación fundamental, en dos disciplinas.</strong> En lingüística y ontologías, IS-A expresa hiponimia: <em>un término IS-A unidad léxica especializada</em>. Es la estructura con la que taxonomías y grafos de conocimiento organizan el mundo. En informática y programación orientada a objetos, IS-A describe la herencia entre clases: <em>un Dataset IS-A Collection</em>. En ambos casos, IS-A conecta lo específico con lo general —exactamente lo que hace esta herramienta al convertir texto en datos con estructura y significado.</p>
+        </div>
+
+        <div class="name-layer">
+            <span class="name-tag alt">ISA</span>
+            <p><strong>Instruction Set Architecture.</strong> En informática de bajo nivel, ISA es el puente fundamental entre el hardware y el software: define las instrucciones, registros y modos de direccionamiento que un procesador entiende. IS-A-BUILDER actúa de forma análoga —es el puente entre el texto en bruto y los datos estructurados que necesitan los modelos.</p>
+        </div>
+
+        <div class="name-layer">
+            <span class="name-tag soft">ISA</span>
+            <p><strong>El nombre de quien lo construyó.</strong> ISA es también Isabel, la autora de esta herramienta.</p>
+        </div>
+
+        <div class="name-layer">
+            <span class="name-tag">BUILDER</span>
+            <p><strong>Construye.</strong> Toma texto en bruto y ensambla el dataset estructurado que necesitas. Como el patrón <em>Builder</em> en programación, configura pieza a pieza —etiquetas, formato, preprocesamiento— hasta producir la salida exacta.</p>
+        </div>
+
+        <div class="modal-section">Sobre la autora</div>
+
+        <p class="bio-text">
+            <strong>Isabel Moyano Moreno</strong> es investigadora predoctoral FPU en Lingüística General en la Universidad de Cádiz, adscrita al grupo <em>Semaínein</em> (HUM-147) y al Laboratorio de Lingüística Computacional y Digital del Instituto Universitario de Investigación en Lingüística Aplicada (ILA). Su trabajo se centra en la ingeniería lingüística y la terminología computacional: extracción automática de términos, modelado del lenguaje de especialidad y procesamiento de corpus especializados mediante aprendizaje automático.
+            <br><br>
+            Cuenta con experiencia como lingüista computacional en una empresa de inteligencia artificial y está acreditada como correctora profesional. Trabaja también en análisis de autoría desde la lingüística forense y la estilometría, con interés en la detección de textos generados por máquinas.
+        </p>
+    </div>
+</div>
+
+<!-- ══════════════════════════════ MAIN ══════════════════════════════ -->
+<div id="main">
+    <div class="app-title">
+        <strong>IS-A-BUILDER</strong>: conversor de texto a datos estructurados
+        <button class="about-btn" onclick="document.getElementById('about-modal').classList.add('open')">¿Por qué este nombre?</button>
+    </div>
+    <div class="app-caption">© Isabel Moyano Moreno | 2026 | Versión 1.0</div>
+
+    <div class="description">
+        En el <strong>procesamiento del lenguaje natural (PLN)</strong>, la calidad de los modelos —desde clasificadores
+        más clásicos hasta los recientes grandes modelos de lenguaje (LLM)— depende directamente de la compilación,
+        estructura y limpieza del corpus lingüístico o <em>dataset</em>.
+        <br><br>
+        <strong>IS-A-BUILDER</strong> ha sido diseñado específicamente como un recurso pedagógico para estudiantes y
+        personas curiosas e interesadas en el PLN. Esta herramienta facilita la transición del texto plano
+        (<code>.txt</code>) a formatos estructurados (<strong>JSON, JSONL, CSV, XML</strong>), permitiendo una
+        preparación de datos acorde a los estándares en PLN.
+    </div>
+
+    <hr class="divider">
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('upload')">📁 Subir archivos</button>
+        <button class="tab-btn"        onclick="switchTab('paste')">✍️ Pegar texto</button>
+    </div>
+
+    <div id="tab-upload" class="tab-content active">
+        <div class="upload-area" id="drop-zone"
+             onclick="document.getElementById('file-input').click()"
+             ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
+            <input type="file" id="file-input" accept=".txt" multiple onchange="handleFiles(this.files)">
+            <div class="upload-icon">📂</div>
+            <p><strong>Haz clic para seleccionar archivos</strong></p>
+            <p>o arrastra y suelta aquí — archivos .txt, múltiples permitidos</p>
+        </div>
+        <div id="file-list"></div>
+    </div>
+
+    <div id="tab-paste" class="tab-content">
+        <textarea id="manual-text" rows="10" placeholder="Pega aquí el texto que deseas estructurar..."></textarea>
+    </div>
+
+    <button class="btn-process" onclick="processData()">▶ Procesar</button>
+
+    <div id="results" style="margin-top:1.5rem">
+        <div class="info-banner">Sube archivos o pega texto para generar el dataset estructurado.</div>
+    </div>
+</div>
+
+<script>
+'use strict';
+
+// ── State ──
+let uploadedFiles = [];
+
+// ── Tabs ──
+function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach((b, i) => {
+        b.classList.toggle('active', (tab === 'upload' && i === 0) || (tab === 'paste' && i === 1));
+    });
+    document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+    document.getElementById('tab-paste').classList.toggle('active', tab === 'paste');
+}
+
+// ── Drag & drop ──
+function dragOver(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.add('drag-over');
+}
+
+function dragLeave() {
+    document.getElementById('drop-zone').classList.remove('drag-over');
+}
+
+function drop(e) {
+    e.preventDefault();
+    document.getElementById('drop-zone').classList.remove('drag-over');
+    const txtFiles = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.txt'));
+    if (txtFiles.length) handleFiles(txtFiles);
+}
+
+function handleFiles(files) {
+    uploadedFiles = Array.from(files);
+    document.getElementById('file-list').innerHTML =
+        uploadedFiles.map(f => `<div>📄 ${esc(f.name)}</div>`).join('');
+}
+
+// ── File reading with encoding fallback ──
+async function readFileText(file) {
+    const buf = await file.arrayBuffer();
+    try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(buf);
+    } catch {
+        return new TextDecoder('iso-8859-1').decode(buf);
+    }
+}
+
+// ── Text processing ──
+function cleanText(text, lowercase, removePunct) {
+    if (lowercase)     text = text.toLowerCase();
+    if (removePunct)   text = text.replace(/[^\w\s]/g, '');
+    return text;
+}
+
+function tokenizeSentences(text) {
+    // Protect common Spanish/academic abbreviations
+    const abbrevs = ['Sr', 'Sra', 'Dr', 'Dra', 'Prof', 'Profa', 'etc', 'vs',
+                     'núm', 'pág', 'págs', 'art', 'fig', 'cap', 'vol', 'ed',
+                     'pp', 'p', 'ej', 'al', 'ibid', 'cf', 'op'];
+    let t = text;
+    abbrevs.forEach(a => {
+        t = t.replace(new RegExp(`\\b${a}\\.`, 'gi'), m => m.slice(0, -1) + '\x01');
+    });
+
+    // Split at sentence boundaries: .!? optionally followed by closing quote, then space + uppercase
+    const parts = t.split(/(?<=[.!?][»"']?)\s+(?=[A-ZÁÉÍÓÚÜÑ¿¡"'«(])/);
+    return parts.map(s => s.replace(/\x01/g, '.').trim()).filter(Boolean);
+}
+
+// ── Main processing ──
+async function processData() {
+    const segBySentences = document.getElementById('segment-sentences').checked;
+    const lowercase      = document.getElementById('do-lowercase').checked;
+    const removePunct    = document.getElementById('do-remove-punct').checked;
+    const contentKey     = document.getElementById('content-key').value.trim() || 'texto';
+    const labelsRaw      = document.getElementById('labels-input').value;
+    const labelKeys      = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
+
+    const rawData = [];
+
+    for (const file of uploadedFiles) {
+        let content = await readFileText(file);
+        content = cleanText(content, lowercase, removePunct);
+        const chunks = segBySentences ? tokenizeSentences(content) : [content];
+        chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: file.name, contenido: s.trim() }); });
+    }
+
+    const manualText = document.getElementById('manual-text').value;
+    if (manualText.trim()) {
+        let content = cleanText(manualText, lowercase, removePunct);
+        const chunks = segBySentences ? tokenizeSentences(content) : [content];
+        chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: 'entrada_manual', contenido: s.trim() }); });
+    }
+
+    renderResults(rawData, contentKey, labelKeys);
+}
+
+// ── Render ──
+function renderResults(rawData, contentKey, labelKeys) {
+    const resultsDiv = document.getElementById('results');
+
+    if (!rawData.length) {
+        resultsDiv.innerHTML = '<div class="info-banner">Sube archivos o pega texto para generar el dataset estructurado.</div>';
+        return;
+    }
+
+    const dataset = rawData.map((item, i) => {
+        const row = { id_registro: i + 1, fuente: item.fuente };
+        row[contentKey] = item.contenido;
+        labelKeys.forEach(k => { row[k] = ''; });
+        return row;
+    });
+
+    const fullText   = dataset.map(r => r[contentKey]).join(' ');
+    const allTokens  = fullText.split(/\s+/).filter(Boolean);
+    const totalWords = allTokens.length;
+    const totalChars = fullText.length;
+
+    const freqMap = {};
+    allTokens.forEach(t => { const w = t.toLowerCase(); freqMap[w] = (freqMap[w] || 0) + 1; });
+    const freqList   = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
+    const uniqueTypes = freqList.length;
+    const ttr         = totalWords > 0 ? (uniqueTypes / totalWords) : 0;
+    const hapaxCount  = freqList.filter(([, c]) => c === 1).length;
+    const hapaxRatio  = uniqueTypes > 0 ? hapaxCount / uniqueTypes : 0;
+    const top10       = freqList.slice(0, 10);
+    const top20       = freqList.slice(0, 20);
+
+    const columns  = ['id_registro', 'fuente', contentKey, ...labelKeys];
+    const preview  = dataset.slice(0, 15);
+
+    const tableRows = preview.map((row, rowIdx) =>
+        `<tr>${columns.map(c => {
+            const val = esc(String(row[c] ?? ''));
+            if (c === 'id_registro') return `<td>${val}</td>`;
+            return `<td contenteditable="true" data-row="${rowIdx}" data-col="${esc(c)}" title="${val}">${val}</td>`;
+        }).join('')}</tr>`
+    ).join('');
+
+    const moreNote = dataset.length > 15
+        ? `<p class="table-note">Mostrando 15 de ${dataset.length} ítems.</p>` : '';
+
+    resultsDiv.innerHTML = `
+        <div class="success-box">✅ Procesamiento completado: <strong>${dataset.length}</strong> ítems generados.</div>
+
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">${dataset.length.toLocaleString('es')}</div>
+                <div class="metric-label">Filas</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${(ttr).toFixed(3)}</div>
+                <div class="metric-label">TTR <span class="ttr-help" title="Type-Token Ratio: cociente entre el número de tipos (palabras únicas) y el total de tokens. Mide la riqueza léxica del corpus. Un valor cercano a 1 indica alta variedad; cercano a 0, mucha repetición.">?</span></div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">${(hapaxRatio * 100).toFixed(1)}%</div>
+                <div class="metric-label">Hapax <span class="ttr-help" title="Porcentaje de hapax legomena: palabras que aparecen una sola vez en el corpus. Un valor alto indica riqueza léxica o escasez de datos de entrenamiento.">?</span></div>
+            </div>
+        </div>
+
+        <div class="section-title">Vista previa del dataset</div>
+        <p style="font-size:0.78rem;color:#aaa;margin-bottom:0.5rem;">Haz clic en cualquier celda para editarla directamente. Los cambios se incluyen en la exportación — o descarga el dataset tal cual y anótalo fuera de esta herramienta.</p>
+        <div class="table-wrap">
+            <table id="preview-table">
+                <thead><tr>${columns.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
+                <tbody>${tableRows}</tbody>
+            </table>
+        </div>
+        ${moreNote}
+
+        <hr class="divider">
+        <div class="section-title">Palabras más frecuentes</div>
+        <div class="freq-section">
+            ${top10.map(([w, c]) => `
+            <div class="freq-row">
+                <span class="freq-word" title="${esc(w)}">${esc(w)}</span>
+                <div class="freq-bar-bg"><div class="freq-bar" style="width:${(c / top10[0][1] * 100).toFixed(1)}%"></div></div>
+                <span class="freq-count">${c}</span>
+            </div>`).join('')}
+        </div>
+
+        <hr class="divider">
+        <div class="section-title">📥 Exportar dataset</div>
+        <div class="export-grid">
+            <button class="btn-export" onclick="exportJSON()">JSON</button>
+            <button class="btn-export" onclick="exportJSONL()">JSONL</button>
+            <button class="btn-export" onclick="exportCSV()">CSV</button>
+            <button class="btn-export" onclick="exportXML()">XML</button>
+        </div>
+        <button class="btn-export-stats" onclick="exportStats()">↓ Descargar estadísticas descriptivas (JSON)</button>
+    `;
+
+    window._ds         = dataset;
+    window._contentKey = contentKey;
+    window._labelKeys  = labelKeys;
+    window._columns    = columns;
+    window._stats      = {
+        total_filas:           dataset.length,
+        total_tokens:          totalWords,
+        total_caracteres:      totalChars,
+        types:                 uniqueTypes,
+        ttr:                   parseFloat(ttr.toFixed(4)),
+        hapax_legomena:        hapaxCount,
+        hapax_ratio:           parseFloat(hapaxRatio.toFixed(4)),
+        top_20_frecuencias:    top20.map(([w, c]) => ({ palabra: w, frecuencia: c })),
+        lista_frecuencias:     freqList.map(([w, c]) => ({ palabra: w, frecuencia: c })),
+    };
+}
+
+// ── Helpers ──
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escXml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+             .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function download(content, filename, mime) {
+    const url = URL.createObjectURL(new Blob([content], { type: mime }));
+    Object.assign(document.createElement('a'), { href: url, download: filename }).click();
+    URL.revokeObjectURL(url);
+}
+
+function outName() {
+    return document.getElementById('output-name').value.trim() || 'dataset_procesado';
+}
+
+// ── Export ──
+function exportJSON() {
+    download(JSON.stringify(window._ds, null, 4), `${outName()}.json`, 'application/json');
+}
+
+function exportJSONL() {
+    download(window._ds.map(r => JSON.stringify(r)).join('\n'), `${outName()}.jsonl`, 'application/jsonl');
+}
+
+function exportCSV() {
+    const cols = window._columns;
+    const rows = window._ds.map(r => cols.map(c => `"${String(r[c] ?? '').replace(/"/g,'""')}"`).join(','));
+    download([cols.join(','), ...rows].join('\n'), `${outName()}.csv`, 'text/csv;charset=utf-8');
+}
+
+function syncCell(e) {
+    const td = e.target.closest('td[contenteditable]');
+    if (!td) return;
+    const row = parseInt(td.dataset.row);
+    const col = td.dataset.col;
+    if (!isNaN(row) && col && window._ds) {
+        window._ds[row][col] = td.innerText;
+    }
+}
+
+document.addEventListener('input', syncCell);
+
+function exportStats() {
+    download(JSON.stringify(window._stats, null, 4), `${outName()}_estadisticas.json`, 'application/json');
+}
+
+function exportXML() {
+    const ck  = window._contentKey;
+    const lks = window._labelKeys;
+    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<corpus>'];
+    for (const item of window._ds) {
+        lines.push('  <documento>');
+        lines.push(`    <id_registro>${escXml(String(item.id_registro))}</id_registro>`);
+        lines.push(`    <${escXml(ck)}>${escXml(String(item[ck] ?? ''))}</${escXml(ck)}>`);
+        lines.push(`    <fuente>${escXml(String(item.fuente ?? ''))}</fuente>`);
+        lks.forEach(k => lines.push(`    <${escXml(k)}>PENDIENTE</${escXml(k)}>`));
+        lines.push('  </documento>');
+    }
+    lines.push('</corpus>');
+    download(lines.join('\n'), `${outName()}.xml`, 'application/xml');
+}
+</script>
+</body>
+</html>
