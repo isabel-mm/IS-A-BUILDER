@@ -7,10 +7,24 @@
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+        :root {
+            --primary: #1367b4;
+            --primary-dark: #0a466d;
+            --primary-soft: #c7eafa;
+            --accent: #ea7c09;
+            --text-muted: #b4b4b4;
+            --accent-soft: #fff3e7;
+            --bg-main: #eef6fb;
+            --bg-card: #ffffff;
+            --border: #d9e5ed;
+            --text-main: #1f1f1f;
+            --text-soft: #666666;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f0f2f6;
-            color: #1f1f1f;
+            background: var(--bg-main);
+            color: var(--text-main);
             display: flex;
             min-height: 100vh;
         }
@@ -19,8 +33,8 @@
         #sidebar {
             width: 280px;
             min-width: 280px;
-            background: white;
-            border-right: 1px solid #e0e0e0;
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
             padding: 1.25rem 1rem;
             position: sticky;
             top: 0;
@@ -35,22 +49,22 @@
         }
 
         .info-box {
-            background: #e8f4fd;
-            border: 1px solid #b3d9f7;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary);
             border-radius: 6px;
             padding: 0.75rem;
             font-size: 0.8rem;
             line-height: 1.5;
         }
 
-        .info-box a { color: #0366d6; }
+        .info-box a { color: var(--primary-dark); }
 
         .s-section { margin-top: 1.1rem; }
 
         .s-section h3 {
             font-size: 0.78rem;
             font-weight: 700;
-            color: #666;
+            color: var(--text-soft);
             text-transform: uppercase;
             letter-spacing: 0.06em;
             margin-bottom: 0.5rem;
@@ -67,19 +81,19 @@
 
         .field-label {
             font-size: 0.8rem;
-            color: #555;
+            color: var(--primary-dark);
             margin: 0.55rem 0 0.2rem;
         }
 
         .s-section input[type="text"] {
             width: 100%;
             padding: 0.38rem 0.55rem;
-            border: 1px solid #ccc;
+            border: 1px solid var(--text-muted);
             border-radius: 4px;
             font-size: 0.85rem;
         }
 
-        hr { border: none; border-top: 1px solid #e6e6e6; margin: 1rem 0; }
+        hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
 
         /* ── Main ── */
         #main {
@@ -95,7 +109,7 @@
         }
 
         .app-caption {
-            color: #999;
+            color: var(--text-muted);
             font-size: 0.82rem;
             margin-bottom: 1.5rem;
         }
@@ -106,12 +120,13 @@
             padding: 1.1rem 1.3rem;
             font-size: 0.91rem;
             line-height: 1.65;
-            border: 1px solid #e8e8e8;
+            border: 1px solid var(--border);
             margin-bottom: 1.5rem;
         }
 
         code {
-            background: #f4f4f4;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
             padding: 0.1em 0.3em;
             border-radius: 3px;
             font-size: 0.88em;
@@ -120,7 +135,7 @@
         /* ── Tabs ── */
         .tabs {
             display: flex;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--border);
             margin-bottom: 1rem;
         }
 
@@ -130,15 +145,15 @@
             background: none;
             cursor: pointer;
             font-size: 0.93rem;
-            color: #777;
+            color: var(--text-soft);
             border-bottom: 2px solid transparent;
             margin-bottom: -2px;
             transition: color 0.15s;
         }
 
         .tab-btn.active {
-            color: #e63946;
-            border-bottom-color: #e63946;
+            color: var(--primary);
+            border-bottom-color: var(--accent);
             font-weight: 600;
         }
 
@@ -147,7 +162,7 @@
 
         /* ── Upload area ── */
         .upload-area {
-            border: 2px dashed #ccc;
+            border: 2px dashed var(--text-muted);
             border-radius: 8px;
             padding: 2rem;
             text-align: center;
@@ -158,25 +173,25 @@
         }
 
         .upload-area:hover,
-        .upload-area.drag-over { border-color: #e63946; background: #fff5f5; }
+        .upload-area.drag-over { border-color: var(--accent); background: var(--accent-soft); }
 
         .upload-area input[type="file"] { display: none; }
 
         .upload-icon { font-size: 2.2rem; margin-bottom: 0.4rem; }
 
-        .upload-area p { color: #666; font-size: 0.88rem; margin-top: 0.2rem; }
+        .upload-area p { color: var(--text-soft); font-size: 0.88rem; margin-top: 0.2rem; }
 
         #file-list {
             margin-top: 0.6rem;
             font-size: 0.83rem;
-            color: #555;
+            color: var(--primary-dark);
             line-height: 1.7;
         }
 
         textarea {
             width: 100%;
             padding: 0.7rem;
-            border: 1px solid #ccc;
+            border: 1px solid var(--text-muted);
             border-radius: 6px;
             font-size: 0.9rem;
             font-family: inherit;
@@ -189,7 +204,7 @@
             display: block;
             width: 100%;
             padding: 0.72rem;
-            background: #e63946;
+            background: var(--accent);
             color: white;
             border: none;
             border-radius: 6px;
@@ -200,25 +215,25 @@
             transition: background 0.2s;
         }
 
-        .btn-process:hover { background: #c62b36; }
+        .btn-process:hover { filter: brightness(0.92); }
 
         /* ── Banners ── */
         .success-box {
-            background: #d4edda;
-            border: 1px solid #c3e6cb;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary);
             border-radius: 6px;
             padding: 0.7rem 1rem;
-            color: #155724;
+            color: var(--primary-dark);
             font-size: 0.88rem;
             margin-bottom: 1rem;
         }
 
         .info-banner {
-            background: #cce5ff;
-            border: 1px solid #b8daff;
+            background: var(--primary-soft);
+            border: 1px solid var(--primary);
             border-radius: 6px;
             padding: 0.7rem 1rem;
-            color: #004085;
+            color: var(--primary-dark);
             font-size: 0.88rem;
         }
 
@@ -232,14 +247,14 @@
 
         .metric-card {
             background: white;
-            border: 1px solid #e8e8e8;
+            border: 1px solid var(--border);
             border-radius: 8px;
             padding: 1rem;
             text-align: center;
         }
 
-        .metric-value { font-size: 1.75rem; font-weight: 700; }
-        .metric-label { font-size: 0.75rem; color: #999; text-transform: uppercase; letter-spacing: 0.06em; }
+        .metric-value { color: var(--primary-dark); font-size: 1.75rem; font-weight: 700; }
+        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
 
         .ttr-help {
             display: inline-flex;
@@ -248,15 +263,15 @@
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: #ddd;
-            color: #666;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
             font-size: 0.65rem;
             font-weight: 700;
             cursor: help;
             vertical-align: middle;
             margin-left: 3px;
         }
-        .ttr-help:hover { background: #e63946; color: white; }
+        .ttr-help:hover { background: var(--accent); color: white; }
 
         /* ── Frequency bars ── */
         .freq-section { margin-top: 1.5rem; }
@@ -273,21 +288,21 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            color: #333;
+            color: var(--text-main);
         }
         .freq-bar-bg {
             flex: 1;
-            background: #f0f0f0;
+            background: var(--primary-soft);
             border-radius: 3px;
             height: 8px;
         }
         .freq-bar {
             height: 8px;
-            background: #e63946;
+            background: var(--accent);
             border-radius: 3px;
             transition: width 0.3s ease;
         }
-        .freq-count { color: #bbb; font-size: 0.75rem; min-width: 28px; text-align: right; }
+        .freq-count { color: var(--text-muted); font-size: 0.75rem; min-width: 28px; text-align: right; }
 
         /* ── Table ── */
         .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; }
@@ -296,24 +311,25 @@
             overflow-x: auto;
             background: white;
             border-radius: 8px;
-            border: 1px solid #e8e8e8;
+            border: 1px solid var(--border);
             margin-bottom: 0.5rem;
         }
 
         table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
 
         th {
-            background: #f8f9fa;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
             padding: 0.55rem 0.75rem;
             text-align: left;
             font-weight: 600;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid var(--primary);
             white-space: nowrap;
         }
 
         td {
             padding: 0.45rem 0.75rem;
-            border-bottom: 1px solid #f2f2f2;
+            border-bottom: 1px solid var(--border);
             max-width: 280px;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -321,20 +337,20 @@
         }
 
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: #fafafa; }
+        tr:hover td { background: var(--primary-soft); }
 
         td[contenteditable] { cursor: text; }
-        td[contenteditable]:hover { background: #fffdf0; }
+        td[contenteditable]:hover { background: var(--accent-soft); }
         td[contenteditable]:focus {
             outline: none;
-            background: #fffbe6;
-            box-shadow: inset 0 0 0 1px #f0c040;
+            background: var(--accent-soft);
+            box-shadow: inset 0 0 0 1px var(--accent);
             white-space: normal;
             overflow: visible;
             max-width: none;
         }
 
-        .table-note { font-size: 0.78rem; color: #aaa; margin-bottom: 1.3rem; }
+        .table-note { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.3rem; }
 
         /* ── Export buttons ── */
         .export-grid {
@@ -345,9 +361,10 @@
 
         .btn-export {
             padding: 0.6rem;
-            border: 1px solid #ccc;
+            border: 1px solid var(--accent);
             border-radius: 6px;
-            background: white;
+            background: var(--accent);
+            color: white;
             cursor: pointer;
             font-size: 0.9rem;
             font-weight: 600;
@@ -355,42 +372,43 @@
         }
 
         .btn-export:hover {
-            background: #e63946;
+            background: var(--accent);
             color: white;
-            border-color: #e63946;
+            border-color: var(--accent);
+            filter: brightness(0.92);
         }
 
         .btn-export-stats {
             display: block;
             width: 100%;
             padding: 0.5rem;
-            border: 1px dashed #ccc;
+            border: 1px dashed var(--accent);
             border-radius: 6px;
-            background: white;
+            background: var(--accent-soft);
             cursor: pointer;
             font-size: 0.82rem;
-            color: #777;
+            color: var(--accent);
             margin-top: 0.55rem;
             transition: all 0.18s;
         }
-        .btn-export-stats:hover { border-color: #e63946; color: #e63946; background: #fff5f5; }
+        .btn-export-stats:hover { border-color: var(--accent); color: white; background: var(--accent); }
 
-        .divider { border: none; border-top: 1px solid #e6e6e6; margin: 1.5rem 0; }
+        .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
 
         /* ── About button ── */
         .about-btn {
             background: none;
-            border: 1px solid #ddd;
+            border: 1px solid var(--text-muted);
             border-radius: 20px;
             padding: 0.2rem 0.7rem;
             font-size: 0.78rem;
-            color: #888;
+            color: var(--primary-dark);
             cursor: pointer;
             margin-left: 0.6rem;
             vertical-align: middle;
             transition: all 0.15s;
         }
-        .about-btn:hover { border-color: #e63946; color: #e63946; }
+        .about-btn:hover { border-color: var(--accent); color: var(--accent); }
 
         /* ── Modal ── */
         .modal-overlay {
@@ -424,10 +442,10 @@
             border: none;
             font-size: 1.3rem;
             cursor: pointer;
-            color: #aaa;
+            color: var(--text-muted);
             line-height: 1;
         }
-        .modal-close:hover { color: #e63946; }
+        .modal-close:hover { color: var(--accent); }
 
         .modal-title {
             font-size: 1.25rem;
@@ -442,7 +460,7 @@
             margin-bottom: 1rem;
         }
         .name-tag {
-            background: #e63946;
+            background: var(--primary);
             color: white;
             font-weight: 700;
             font-size: 0.78rem;
@@ -452,20 +470,20 @@
             margin-top: 0.1rem;
             flex-shrink: 0;
         }
-        .name-tag.alt { background: #444; }
-        .name-tag.soft { background: #888; }
+        .name-tag.alt { background: var(--primary-dark); }
+        .name-tag.soft { background: var(--accent); }
 
         .name-layer p {
             font-size: 0.88rem;
             line-height: 1.55;
-            color: #333;
+            color: var(--text-main);
         }
-        .name-layer p strong { color: #111; }
+        .name-layer p strong { color: var(--primary-dark); }
 
         .modal-section {
             font-size: 0.82rem;
             font-weight: 700;
-            color: #999;
+            color: var(--text-muted);
             text-transform: uppercase;
             letter-spacing: 0.07em;
             margin: 1.4rem 0 0.7rem;
@@ -474,7 +492,7 @@
         .bio-text {
             font-size: 0.88rem;
             line-height: 1.65;
-            color: #444;
+            color: var(--text-main);
         }
     </style>
 </head>
@@ -493,29 +511,29 @@
     <hr>
 
     <div class="s-section">
-        <h3>⚙️ Configuración</h3>
-    </div>
-
-    <div class="s-section">
-        <h3>Dataset</h3>
+        <h3>Configuración</h3>
+        <div class="field-label">Procesamiento</div>
         <label>
             <input type="checkbox" id="segment-sentences" checked>
             Tokenización por oraciones
         </label>
-    </div>
+        <label>
+            <input type="checkbox" id="do-lowercase">
+            Normalizar a minúscula
+        </label>
+        <label>
+            <input type="checkbox" id="do-remove-stopwords">
+            Eliminar palabras funcionales
+            <span class="ttr-help" title="La eliminación de palabras funcionales se aplica según el idioma detectado. En la versión Python se usa langdetect; esta versión web conserva una detección local ES/EN para funcionar sin servidor.">?</span>
+        </label>
 
-    <div class="s-section">
-        <h3>🧽 Preprocesamiento</h3>
-        <label><input type="checkbox" id="do-lowercase"> Normalizar a minúscula</label>
-        <label><input type="checkbox" id="do-remove-punct"> Eliminar puntuación</label>
-    </div>
-
-    <div class="s-section">
-        <h3>📋 Estructura</h3>
         <div class="field-label">Etiqueta de contenido</div>
         <input type="text" id="content-key" value="texto">
 
-        <div class="field-label">Etiquetas de metadatos</div>
+        <div class="field-label">
+            Etiquetas de metadatos
+            <span class="ttr-help" title="Escribe las etiquetas separadas por comas. Ejemplo: sentimiento, categoria, dificultad">?</span>
+        </div>
         <input type="text" id="labels-input" value="sentimiento, categoria">
 
         <div class="field-label">Nombre del archivo de salida</div>
@@ -584,8 +602,8 @@
     <hr class="divider">
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('upload')">📁 Subir archivos</button>
-        <button class="tab-btn"        onclick="switchTab('paste')">✍️ Pegar texto</button>
+        <button class="tab-btn active" onclick="switchTab('upload')">Subir archivos</button>
+        <button class="tab-btn"        onclick="switchTab('paste')">Pegar texto</button>
     </div>
 
     <div id="tab-upload" class="tab-content active">
@@ -646,7 +664,7 @@ function drop(e) {
 function handleFiles(files) {
     uploadedFiles = Array.from(files);
     document.getElementById('file-list').innerHTML =
-        uploadedFiles.map(f => `<div>📄 ${esc(f.name)}</div>`).join('');
+        uploadedFiles.map(f => `<div>${esc(f.name)}</div>`).join('');
 }
 
 // ── File reading with encoding fallback ──
@@ -660,9 +678,108 @@ async function readFileText(file) {
 }
 
 // ── Text processing ──
-function cleanText(text, lowercase, removePunct) {
-    if (lowercase)     text = text.toLowerCase();
-    if (removePunct)   text = text.replace(/[^\w\s]/g, '');
+const FUNCTION_WORDS_ES = new Set([
+    // Español
+    'a', 'acá', 'ahí', 'al', 'algo', 'algunas', 'algunos', 'allá', 'allí',
+    'ambos', 'ante', 'antes', 'aquel', 'aquella', 'aquellas', 'aquello',
+    'aquellos', 'aquí', 'cada', 'como', 'con', 'contra', 'cual', 'cuales',
+    'cuando', 'cuanto', 'cuanta', 'cuantos', 'cuantas', 'de', 'del', 'desde',
+    'donde', 'dos', 'durante', 'e', 'el', 'él', 'ella', 'ellas', 'ello',
+    'ellos', 'en', 'entre', 'era', 'erais', 'eran', 'eras', 'eres', 'es',
+    'esa', 'esas', 'ese', 'eso', 'esos', 'esta', 'estaba', 'estabais',
+    'estaban', 'estabas', 'estad', 'estada', 'estadas', 'estado', 'estados',
+    'estamos', 'estando', 'estar', 'estaremos', 'estará', 'estarán',
+    'estarás', 'estaré', 'estaréis', 'estaría', 'estaríais', 'estaríamos',
+    'estarían', 'estarías', 'estas', 'este', 'estemos', 'esto', 'estos',
+    'estoy', 'estuve', 'estuviera', 'estuvierais', 'estuvieran', 'estuvieras',
+    'estuvieron', 'estuviese', 'estuvieseis', 'estuviesen', 'estuvieses',
+    'estuvimos', 'estuviste', 'estuvisteis', 'estuviéramos', 'estuviésemos',
+    'estuvo', 'está', 'estábamos', 'estáis', 'están', 'estás', 'esté',
+    'estéis', 'estén', 'estés', 'fue', 'fuera', 'fuerais', 'fueran',
+    'fueras', 'fueron', 'fuese', 'fueseis', 'fuesen', 'fueses', 'fui',
+    'fuimos', 'fuiste', 'fuisteis', 'fuéramos', 'fuésemos', 'ha', 'habida',
+    'habidas', 'habido', 'habidos', 'habiendo', 'habremos', 'habrá',
+    'habrán', 'habrás', 'habré', 'habréis', 'habría', 'habríais',
+    'habríamos', 'habrían', 'habrías', 'habéis', 'había', 'habíais',
+    'habíamos', 'habían', 'habías', 'han', 'has', 'hasta', 'hay', 'haya',
+    'hayamos', 'hayan', 'hayas', 'hayáis', 'he', 'hemos', 'hube', 'hubiera',
+    'hubierais', 'hubieran', 'hubieras', 'hubieron', 'hubiese', 'hubieseis',
+    'hubiesen', 'hubieses', 'hubimos', 'hubiste', 'hubisteis', 'hubiéramos',
+    'hubiésemos', 'hubo', 'la', 'las', 'le', 'les', 'lo', 'los', 'más',
+    'me', 'mi', 'mis', 'mucha', 'muchas', 'mucho', 'muchos', 'muy', 'mí',
+    'mía', 'mías', 'mío', 'míos', 'nada', 'ni', 'no', 'nos', 'nosotras',
+    'nosotros', 'nuestra', 'nuestras', 'nuestro', 'nuestros', 'o', 'os',
+    'otra', 'otras', 'otro', 'otros', 'para', 'pero', 'poco', 'por',
+    'porque', 'que', 'qué', 'quien', 'quienes', 'se', 'sea', 'seamos',
+    'sean', 'seas', 'seremos', 'será', 'serán', 'serás', 'seré', 'seréis',
+    'sería', 'seríais', 'seríamos', 'serían', 'serías', 'seáis', 'sido',
+    'siendo', 'sin', 'sobre', 'sois', 'somos', 'son', 'soy', 'su', 'sus',
+    'suya', 'suyas', 'suyo', 'suyos', 'sí', 'también', 'tanto', 'te',
+    'tendremos', 'tendrá', 'tendrán', 'tendrás', 'tendré', 'tendréis',
+    'tendría', 'tendríais', 'tendríamos', 'tendrían', 'tendrías', 'tened',
+    'tenemos', 'tenga', 'tengamos', 'tengan', 'tengas', 'tengo', 'tengáis',
+    'tenida', 'tenidas', 'tenido', 'tenidos', 'teniendo', 'tenéis', 'tenía',
+    'teníais', 'teníamos', 'tenían', 'tenías', 'ti', 'tiene', 'tienen',
+    'tienes', 'todo', 'todos', 'tu', 'tus', 'tuve', 'tuviera', 'tuvierais',
+    'tuvieran', 'tuvieras', 'tuvieron', 'tuviese', 'tuvieseis', 'tuviesen',
+    'tuvieses', 'tuvimos', 'tuviste', 'tuvisteis', 'tuviéramos',
+    'tuviésemos', 'tuvo', 'tuya', 'tuyas', 'tuyo', 'tuyos', 'tú', 'un',
+    'una', 'uno', 'unos', 'vosotras', 'vosotros', 'vuestra', 'vuestras',
+    'vuestro', 'vuestros', 'y', 'ya', 'yo'
+]);
+
+const FUNCTION_WORDS_EN = new Set([
+    // English
+    'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an',
+    'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before',
+    'being', 'below', 'between', 'both', 'but', 'by', 'can', 'could', 'did',
+    'do', 'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from',
+    'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here', 'hers',
+    'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into',
+    'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my',
+    'myself', 'no', 'nor', 'not', 'now', 'of', 'off', 'on', 'once', 'only',
+    'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 'same',
+    'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their',
+    'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this',
+    'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was',
+    'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom',
+    'why', 'will', 'with', 'would', 'you', 'your', 'yours', 'yourself',
+    'yourselves'
+]);
+
+function normalizeToken(token) {
+    return token
+        .toLowerCase()
+        .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
+}
+
+function detectStopwordLanguage(tokens) {
+    const scores = tokens.reduce((acc, token) => {
+        if (FUNCTION_WORDS_ES.has(token)) acc.es += 1;
+        if (FUNCTION_WORDS_EN.has(token)) acc.en += 1;
+        return acc;
+    }, { es: 0, en: 0 });
+    return scores.en > scores.es ? 'en' : 'es';
+}
+
+function removeFunctionWords(text) {
+    const tokens = text.split(/\s+/);
+    const normalizedTokens = tokens.map(normalizeToken).filter(Boolean);
+    const language = detectStopwordLanguage(normalizedTokens);
+    const functionWords = language === 'en' ? FUNCTION_WORDS_EN : FUNCTION_WORDS_ES;
+
+    return text
+        .split(/\s+/)
+        .filter(token => {
+            const normalized = normalizeToken(token);
+            return normalized && !functionWords.has(normalized);
+        })
+        .join(' ');
+}
+
+function cleanText(text, lowercase, removeStopwords) {
+    if (lowercase) text = text.toLowerCase();
+    if (removeStopwords) text = removeFunctionWords(text);
     return text;
 }
 
@@ -685,7 +802,7 @@ function tokenizeSentences(text) {
 async function processData() {
     const segBySentences = document.getElementById('segment-sentences').checked;
     const lowercase      = document.getElementById('do-lowercase').checked;
-    const removePunct    = document.getElementById('do-remove-punct').checked;
+    const removeStopwords = document.getElementById('do-remove-stopwords').checked;
     const contentKey     = document.getElementById('content-key').value.trim() || 'texto';
     const labelsRaw      = document.getElementById('labels-input').value;
     const labelKeys      = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
@@ -694,14 +811,14 @@ async function processData() {
 
     for (const file of uploadedFiles) {
         let content = await readFileText(file);
-        content = cleanText(content, lowercase, removePunct);
+        content = cleanText(content, lowercase, removeStopwords);
         const chunks = segBySentences ? tokenizeSentences(content) : [content];
         chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: file.name, contenido: s.trim() }); });
     }
 
     const manualText = document.getElementById('manual-text').value;
     if (manualText.trim()) {
-        let content = cleanText(manualText, lowercase, removePunct);
+        let content = cleanText(manualText, lowercase, removeStopwords);
         const chunks = segBySentences ? tokenizeSentences(content) : [content];
         chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: 'entrada_manual', contenido: s.trim() }); });
     }
@@ -755,7 +872,7 @@ function renderResults(rawData, contentKey, labelKeys) {
         ? `<p class="table-note">Mostrando 15 de ${dataset.length} ítems.</p>` : '';
 
     resultsDiv.innerHTML = `
-        <div class="success-box">✅ Procesamiento completado: <strong>${dataset.length}</strong> ítems generados.</div>
+        <div class="success-box">Procesamiento completado: <strong>${dataset.length}</strong> ítems generados.</div>
 
         <div class="metrics">
             <div class="metric-card">
@@ -773,7 +890,7 @@ function renderResults(rawData, contentKey, labelKeys) {
         </div>
 
         <div class="section-title">Vista previa del dataset</div>
-        <p style="font-size:0.78rem;color:#aaa;margin-bottom:0.5rem;">Haz clic en cualquier celda para editarla directamente. Los cambios se incluyen en la exportación — o descarga el dataset tal cual y anótalo fuera de esta herramienta.</p>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;">Haz clic en cualquier celda para editarla directamente. Los cambios se incluyen en la exportación — o descarga el dataset tal cual y anótalo fuera de esta herramienta.</p>
         <div class="table-wrap">
             <table id="preview-table">
                 <thead><tr>${columns.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
@@ -794,14 +911,14 @@ function renderResults(rawData, contentKey, labelKeys) {
         </div>
 
         <hr class="divider">
-        <div class="section-title">📥 Exportar dataset</div>
+        <div class="section-title">Exportar dataset</div>
         <div class="export-grid">
             <button class="btn-export" onclick="exportJSON()">JSON</button>
             <button class="btn-export" onclick="exportJSONL()">JSONL</button>
             <button class="btn-export" onclick="exportCSV()">CSV</button>
             <button class="btn-export" onclick="exportXML()">XML</button>
         </div>
-        <button class="btn-export-stats" onclick="exportStats()">↓ Descargar estadísticas descriptivas (JSON)</button>
+        <button class="btn-export-stats" onclick="exportStats()">Descargar estadísticas descriptivas (JSON)</button>
     `;
 
     window._ds         = dataset;
