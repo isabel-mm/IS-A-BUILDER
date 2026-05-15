@@ -9,6 +9,7 @@ import nltk
 import re
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
+from nltk.corpus import stopwords
 from nltk.tokenize import PunktSentenceTokenizer
 from langdetect import detect, LangDetectException
 import urllib.request
@@ -18,59 +19,32 @@ import zipfile
 @st.cache_resource
 def setup_nltk():
     nltk_data_path = './nltk_data'
-    if not os.path.exists(os.path.join(nltk_data_path, 'tokenizers/punkt')):
-        os.makedirs(nltk_data_path, exist_ok=True)
-        url = 'https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/tokenizers/punkt.zip'
-        zip_path = os.path.join(nltk_data_path, 'punkt.zip')
+    os.makedirs(nltk_data_path, exist_ok=True)
+    nltk.data.path.append(nltk_data_path)
+
+    def ensure_package(resource_path, package_name, target_dir):
+        if os.path.exists(os.path.join(nltk_data_path, resource_path)):
+            return
+        url = f'https://raw.githubusercontent.com/nltk/nltk_data/gh-pages/packages/{target_dir}/{package_name}.zip'
+        zip_path = os.path.join(nltk_data_path, f'{package_name}.zip')
         urllib.request.urlretrieve(url, zip_path)
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(nltk_data_path)
-    nltk.data.path.append(nltk_data_path)
-    return PunktSentenceTokenizer()
 
-punkt_tokenizer = setup_nltk()
+    ensure_package('tokenizers/punkt', 'punkt', 'tokenizers')
+    ensure_package('corpora/stopwords', 'stopwords', 'corpora')
+
+    return (
+        PunktSentenceTokenizer(),
+        {
+            'es': set(stopwords.words('spanish')),
+            'en': set(stopwords.words('english')),
+        }
+    )
+
+punkt_tokenizer, FUNCTION_WORDS = setup_nltk()
 
 # --- FUNCIONES DE PROCESAMIENTO ---
-FUNCTION_WORDS = {
-    'es': {
-        'a', 'al', 'algo', 'algunas', 'algunos', 'ante', 'antes', 'aquel',
-        'aquella', 'aquellas', 'aquellos', 'aquí', 'cada', 'como', 'con',
-        'contra', 'cual', 'cuando', 'de', 'del', 'desde', 'donde', 'durante',
-        'e', 'el', 'él', 'ella', 'ellas', 'ello', 'ellos', 'en', 'entre',
-        'era', 'eran', 'eras', 'eres', 'es', 'esa', 'esas', 'ese', 'eso',
-        'esos', 'esta', 'estaba', 'estaban', 'estado', 'estamos', 'estar',
-        'estas', 'este', 'esto', 'estos', 'estoy', 'está', 'están', 'estás',
-        'fue', 'fueron', 'fui', 'fuimos', 'ha', 'había', 'han', 'has',
-        'hasta', 'hay', 'he', 'hemos', 'la', 'las', 'le', 'les', 'lo',
-        'los', 'más', 'me', 'mi', 'mis', 'mucho', 'muchos', 'muy', 'nada',
-        'ni', 'no', 'nos', 'nosotras', 'nosotros', 'nuestra', 'nuestro',
-        'o', 'os', 'otra', 'otras', 'otro', 'otros', 'para', 'pero', 'por',
-        'porque', 'que', 'qué', 'quien', 'quienes', 'se', 'sea', 'ser',
-        'si', 'sí', 'sin', 'sobre', 'somos', 'son', 'soy', 'su', 'sus',
-        'también', 'te', 'tiene', 'tienen', 'todo', 'todos', 'tu', 'tus',
-        'tú', 'un', 'una', 'uno', 'unos', 'vosotras', 'vosotros', 'y', 'ya',
-        'yo'
-    },
-    'en': {
-        'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am',
-        'an', 'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been',
-        'before', 'being', 'below', 'between', 'both', 'but', 'by', 'can',
-        'could', 'did', 'do', 'does', 'doing', 'down', 'during', 'each',
-        'few', 'for', 'from', 'further', 'had', 'has', 'have', 'having',
-        'he', 'her', 'here', 'hers', 'herself', 'him', 'himself', 'his',
-        'how', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'itself', 'just',
-        'me', 'more', 'most', 'my', 'myself', 'no', 'nor', 'not', 'now',
-        'of', 'off', 'on', 'once', 'only', 'or', 'other', 'our', 'ours',
-        'ourselves', 'out', 'over', 'own', 'same', 'she', 'should', 'so',
-        'some', 'such', 'than', 'that', 'the', 'their', 'theirs', 'them',
-        'themselves', 'then', 'there', 'these', 'they', 'this', 'those',
-        'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was', 'we',
-        'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom',
-        'why', 'will', 'with', 'would', 'you', 'your', 'yours', 'yourself',
-        'yourselves'
-    }
-}
-
 def normalize_token(token):
     return re.sub(r'^[^\wáéíóúüñÁÉÍÓÚÜÑ]+|[^\wáéíóúüñÁÉÍÓÚÜÑ]+$', '', token.lower())
 
@@ -167,7 +141,7 @@ segment_by_sentences = st.sidebar.checkbox('Tokenización por oraciones', value=
 do_lowercase = st.sidebar.checkbox('Normalizar a minúscula')
 do_remove_stopwords = st.sidebar.checkbox(
     'Eliminar palabras funcionales',
-    help='Detecta el idioma con langdetect y elimina palabras funcionales en español o inglés.'
+    help='Detecta el idioma con langdetect y elimina stopwords de NLTK en español o inglés.'
 )
 
 content_key = st.sidebar.text_input('Etiqueta de contenido', value='texto')
