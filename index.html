@@ -355,7 +355,7 @@
         /* ── Export buttons ── */
         .export-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 0.7rem;
         }
 
@@ -530,11 +530,12 @@
         <div class="field-label">Etiqueta de contenido</div>
         <input type="text" id="content-key" value="texto">
 
-        <div class="field-label">
-            Etiquetas de metadatos
-            <span class="ttr-help" title="Escribe las etiquetas separadas por comas. Ejemplo: sentimiento, categoria, dificultad">?</span>
-        </div>
-        <input type="text" id="labels-input" value="sentimiento, categoria">
+        <label style="margin-top:0.55rem">
+            <input type="checkbox" id="use-labels" onchange="document.getElementById('labels-input').hidden = !this.checked">
+            Añadir etiquetas de metadatos
+            <span class="ttr-help" title="Opcional. Añade columnas vacías para anotar cada ítem. Escribe las etiquetas separadas por comas. Ejemplo: sentimiento, categoria, dificultad">?</span>
+        </label>
+        <input type="text" id="labels-input" value="sentimiento, categoria" hidden>
 
         <div class="field-label">Nombre del archivo de salida</div>
         <input type="text" id="output-name" value="dataset_procesado">
@@ -573,7 +574,7 @@
         <div class="modal-section">Sobre la autora</div>
 
         <p class="bio-text">
-            <strong>Isabel Moyano Moreno</strong> es investigadora predoctoral FPU en Lingüística General en la Universidad de Cádiz, adscrita al grupo <em>Semaínein</em> (HUM-147) y al Laboratorio de Lingüística Computacional y Digital del Instituto Universitario de Investigación en Lingüística Aplicada (ILA). Su trabajo se centra en la ingeniería lingüística y la terminología computacional: extracción automática de términos, modelado del lenguaje de especialidad y procesamiento de corpus especializados mediante aprendizaje automático.
+            <strong>Isabel Moyano Moreno</strong> es docente e investigadora en el área de Lingüística General de la Universidad de Cádiz, adscrita al grupo <em>Semaínein</em> (HUM-147) y al Laboratorio de Lingüística Computacional y Digital del Instituto Universitario de Investigación en Lingüística Aplicada (ILA). Su trabajo se centra en la ingeniería lingüística y la terminología computacional: extracción automática de términos, modelado del lenguaje de especialidad y procesamiento de corpus especializados mediante aprendizaje automático.
             <br><br>
             Cuenta con experiencia como lingüista computacional en una empresa de inteligencia artificial y está acreditada como correctora profesional. Trabaja también en análisis de autoría desde la lingüística forense y la estilometría, con interés en la detección de textos generados por máquinas.
         </p>
@@ -610,10 +611,10 @@
         <div class="upload-area" id="drop-zone"
              onclick="document.getElementById('file-input').click()"
              ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="drop(event)">
-            <input type="file" id="file-input" accept=".txt" multiple onchange="handleFiles(this.files)">
+            <input type="file" id="file-input" accept=".txt,.html,.htm" multiple onchange="handleFiles(this.files)">
             <div class="upload-icon">📂</div>
             <p><strong>Haz clic para seleccionar archivos</strong></p>
-            <p>o arrastra y suelta aquí — archivos .txt, múltiples permitidos</p>
+            <p>o arrastra y suelta aquí — archivos .txt o .html (p. ej., artículos de Wikipedia guardados), múltiples permitidos</p>
         </div>
         <div id="file-list"></div>
     </div>
@@ -657,8 +658,8 @@ function dragLeave() {
 function drop(e) {
     e.preventDefault();
     document.getElementById('drop-zone').classList.remove('drag-over');
-    const txtFiles = Array.from(e.dataTransfer.files).filter(f => f.name.endsWith('.txt'));
-    if (txtFiles.length) handleFiles(txtFiles);
+    const validFiles = Array.from(e.dataTransfer.files).filter(f => /\.(txt|html?)$/i.test(f.name));
+    if (validFiles.length) handleFiles(validFiles);
 }
 
 function handleFiles(files) {
@@ -675,6 +676,41 @@ async function readFileText(file) {
     } catch {
         return new TextDecoder('iso-8859-1').decode(buf);
     }
+}
+
+// ── HTML text extraction (optimizado para Wikipedia) ──
+// Elementos que no forman parte del texto corrido del artículo
+const HTML_NOISE = [
+    'script', 'style', 'noscript', 'table', 'figure', 'math',
+    'sup.reference', '.mw-editsection', '.infobox', '.navbox', '.thumb',
+    '.gallery', '.hatnote', '.noprint', '.toc', '#toc', '.reflist',
+    '.listaref', '.references', '.metadata', '.ambox', '.mw-empty-elt'
+].join(', ');
+
+// Secciones finales que no aportan texto corrido
+const HTML_END_SECTIONS = /^(notas|referencias|bibliograf[ií]a|v[eé]ase también|enlaces externos|notes|references|bibliography|see also|external links|further reading)$/i;
+
+function extractTextFromHTML(html) {
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const root = doc.querySelector('#mw-content-text .mw-parser-output')
+              || doc.querySelector('article, main, [role="main"]')
+              || doc.body;
+
+    // Cortar desde la primera sección final (Referencias, Véase también...)
+    const endHeading = Array.from(root.querySelectorAll('h2'))
+        .find(h => HTML_END_SECTIONS.test(h.textContent.trim()));
+    if (endHeading) {
+        let el = endHeading.closest('.mw-heading') || endHeading;
+        while (el.parentElement && el.parentElement !== root) el = el.parentElement;
+        while (el) { const next = el.nextElementSibling; el.remove(); el = next; }
+    }
+
+    root.querySelectorAll(HTML_NOISE).forEach(el => el.remove());
+
+    return Array.from(root.querySelectorAll('p'))
+        .map(p => p.textContent.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .join('\n\n');
 }
 
 // ── Text processing ──
@@ -804,13 +840,15 @@ async function processData() {
     const lowercase      = document.getElementById('do-lowercase').checked;
     const removeStopwords = document.getElementById('do-remove-stopwords').checked;
     const contentKey     = document.getElementById('content-key').value.trim() || 'texto';
-    const labelsRaw      = document.getElementById('labels-input').value;
+    const useLabels      = document.getElementById('use-labels').checked;
+    const labelsRaw      = useLabels ? document.getElementById('labels-input').value : '';
     const labelKeys      = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
 
     const rawData = [];
 
     for (const file of uploadedFiles) {
         let content = await readFileText(file);
+        if (/\.html?$/i.test(file.name)) content = extractTextFromHTML(content);
         content = cleanText(content, lowercase, removeStopwords);
         const chunks = segBySentences ? tokenizeSentences(content) : [content];
         chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: file.name, contenido: s.trim() }); });
@@ -848,8 +886,8 @@ function renderResults(rawData, contentKey, labelKeys) {
     const totalChars = fullText.length;
 
     const freqMap = {};
-    allTokens.forEach(t => { const w = t.toLowerCase(); freqMap[w] = (freqMap[w] || 0) + 1; });
-    const freqList   = Object.entries(freqMap).sort((a, b) => b[1] - a[1]);
+    allTokens.forEach(t => { const w = normalizeToken(t); if (w) freqMap[w] = (freqMap[w] || 0) + 1; });
+    const freqList   = Object.entries(freqMap).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
     const uniqueTypes = freqList.length;
     const ttr         = totalWords > 0 ? (uniqueTypes / totalWords) : 0;
     const hapaxCount  = freqList.filter(([, c]) => c === 1).length;
@@ -909,6 +947,11 @@ function renderResults(rawData, contentKey, labelKeys) {
                 <span class="freq-count">${c}</span>
             </div>`).join('')}
         </div>
+        <p class="table-note" style="margin:0.8rem 0 0">Frecuencias absolutas de las ${uniqueTypes.toLocaleString('es')} palabras distintas:</p>
+        <div class="export-grid" style="grid-template-columns:repeat(2, 1fr)">
+            <button class="btn-export-stats" onclick="exportFreqCSV()">Descargar frecuencias (CSV)</button>
+            <button class="btn-export-stats" onclick="exportFreqXLSX()">Descargar frecuencias (Excel)</button>
+        </div>
 
         <hr class="divider">
         <div class="section-title">Exportar dataset</div>
@@ -917,6 +960,7 @@ function renderResults(rawData, contentKey, labelKeys) {
             <button class="btn-export" onclick="exportJSONL()">JSONL</button>
             <button class="btn-export" onclick="exportCSV()">CSV</button>
             <button class="btn-export" onclick="exportXML()">XML</button>
+            <button class="btn-export" onclick="exportXLSX()">Excel</button>
         </div>
         <button class="btn-export-stats" onclick="exportStats()">Descargar estadísticas descriptivas (JSON)</button>
     `;
@@ -984,6 +1028,49 @@ function syncCell(e) {
 }
 
 document.addEventListener('input', syncCell);
+
+function exportFreqCSV() {
+    const rows = window._stats.lista_frecuencias.map(({ palabra, frecuencia }, i) =>
+        `${i + 1},"${palabra.replace(/"/g,'""')}",${frecuencia}`);
+    // BOM para que Excel reconozca UTF-8 (tildes, ñ)
+    download('\uFEFF' + ['rango,palabra,frecuencia_absoluta', ...rows].join('\n'),
+             `${outName()}_frecuencias.csv`, 'text/csv;charset=utf-8');
+}
+
+// SheetJS se carga solo al exportar a Excel (requiere conexión la primera vez)
+let xlsxLoading = null;
+function loadXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    xlsxLoading ??= new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
+        script.onload = () => resolve(window.XLSX);
+        script.onerror = () => { xlsxLoading = null; reject(); };
+        document.head.appendChild(script);
+    });
+    return xlsxLoading;
+}
+
+async function downloadXLSX(rows, header, sheetName, filename) {
+    try {
+        const XLSX = await loadXLSX();
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows, { header }), sheetName);
+        XLSX.writeFile(wb, filename);
+    } catch {
+        alert('No se pudo cargar el generador de Excel. Comprueba tu conexión o exporta en CSV.');
+    }
+}
+
+function exportXLSX() {
+    downloadXLSX(window._ds, window._columns, 'dataset', `${outName()}.xlsx`);
+}
+
+function exportFreqXLSX() {
+    const rows = window._stats.lista_frecuencias.map(({ palabra, frecuencia }, i) =>
+        ({ rango: i + 1, palabra, frecuencia_absoluta: frecuencia }));
+    downloadXLSX(rows, ['rango', 'palabra', 'frecuencia_absoluta'], 'frecuencias', `${outName()}_frecuencias.xlsx`);
+}
 
 function exportStats() {
     download(JSON.stringify(window._stats, null, 4), `${outName()}_estadisticas.json`, 'application/json');
