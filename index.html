@@ -4,497 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IS-A-BUILDER: conversor de texto a datos estructurados</title>
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --primary: #1367b4;
-            --primary-dark: #0a466d;
-            --primary-soft: #c7eafa;
-            --accent: #ea7c09;
-            --text-muted: #b4b4b4;
-            --accent-soft: #fff3e7;
-            --bg-main: #eef6fb;
-            --bg-card: #ffffff;
-            --border: #d9e5ed;
-            --text-main: #1f1f1f;
-            --text-soft: #666666;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--bg-main);
-            color: var(--text-main);
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* ── Sidebar ── */
-        #sidebar {
-            width: 280px;
-            min-width: 280px;
-            background: var(--bg-card);
-            border-right: 1px solid var(--border);
-            padding: 1.25rem 1rem;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-        }
-
-        .logo-img {
-            max-width: 100%;
-            margin-bottom: 1rem;
-            border-radius: 4px;
-        }
-
-        .info-box {
-            background: var(--primary-soft);
-            border: 1px solid var(--primary);
-            border-radius: 6px;
-            padding: 0.75rem;
-            font-size: 0.8rem;
-            line-height: 1.5;
-        }
-
-        .info-box a { color: var(--primary-dark); }
-
-        .s-section { margin-top: 1.1rem; }
-
-        .s-section h3 {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--text-soft);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 0.5rem;
-        }
-
-        .s-section label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.88rem;
-            margin-bottom: 0.35rem;
-            cursor: pointer;
-        }
-
-        .field-label {
-            font-size: 0.8rem;
-            color: var(--primary-dark);
-            margin: 0.55rem 0 0.2rem;
-        }
-
-        .s-section input[type="text"] {
-            width: 100%;
-            padding: 0.38rem 0.55rem;
-            border: 1px solid var(--text-muted);
-            border-radius: 4px;
-            font-size: 0.85rem;
-        }
-
-        hr { border: none; border-top: 1px solid var(--border); margin: 1rem 0; }
-
-        /* ── Main ── */
-        #main {
-            flex: 1;
-            padding: 2rem 2.5rem;
-            max-width: 960px;
-        }
-
-        .app-title {
-            font-size: 1.55rem;
-            font-weight: 700;
-            margin-bottom: 0.2rem;
-        }
-
-        .app-caption {
-            color: var(--text-muted);
-            font-size: 0.82rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .description {
-            background: white;
-            border-radius: 8px;
-            padding: 1.1rem 1.3rem;
-            font-size: 0.91rem;
-            line-height: 1.65;
-            border: 1px solid var(--border);
-            margin-bottom: 1.5rem;
-        }
-
-        code {
-            background: var(--primary-soft);
-            color: var(--primary-dark);
-            padding: 0.1em 0.3em;
-            border-radius: 3px;
-            font-size: 0.88em;
-        }
-
-        /* ── Tabs ── */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid var(--border);
-            margin-bottom: 1rem;
-        }
-
-        .tab-btn {
-            padding: 0.55rem 1.1rem;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-size: 0.93rem;
-            color: var(--text-soft);
-            border-bottom: 2px solid transparent;
-            margin-bottom: -2px;
-            transition: color 0.15s;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            border-bottom-color: var(--accent);
-            font-weight: 600;
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* ── Upload area ── */
-        .upload-area {
-            border: 2px dashed var(--text-muted);
-            border-radius: 8px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            background: white;
-            transition: border-color 0.2s, background 0.2s;
-            user-select: none;
-        }
-
-        .upload-area:hover,
-        .upload-area.drag-over { border-color: var(--accent); background: var(--accent-soft); }
-
-        .upload-area input[type="file"] { display: none; }
-
-        .upload-icon { font-size: 2.2rem; margin-bottom: 0.4rem; }
-
-        .upload-area p { color: var(--text-soft); font-size: 0.88rem; margin-top: 0.2rem; }
-
-        #file-list {
-            margin-top: 0.6rem;
-            font-size: 0.83rem;
-            color: var(--primary-dark);
-            line-height: 1.7;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 0.7rem;
-            border: 1px solid var(--text-muted);
-            border-radius: 6px;
-            font-size: 0.9rem;
-            font-family: inherit;
-            resize: vertical;
-            background: white;
-        }
-
-        /* ── Process button ── */
-        .btn-process {
-            display: block;
-            width: 100%;
-            padding: 0.72rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 0.97rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: background 0.2s;
-        }
-
-        .btn-process:hover { filter: brightness(0.92); }
-
-        /* ── Banners ── */
-        .success-box {
-            background: var(--primary-soft);
-            border: 1px solid var(--primary);
-            border-radius: 6px;
-            padding: 0.7rem 1rem;
-            color: var(--primary-dark);
-            font-size: 0.88rem;
-            margin-bottom: 1rem;
-        }
-
-        .info-banner {
-            background: var(--primary-soft);
-            border: 1px solid var(--primary);
-            border-radius: 6px;
-            padding: 0.7rem 1rem;
-            color: var(--primary-dark);
-            font-size: 0.88rem;
-        }
-
-        /* ── Metrics ── */
-        .metrics {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .metric-card {
-            background: white;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
-        }
-
-        .metric-value { color: var(--primary-dark); font-size: 1.75rem; font-weight: 700; }
-        .metric-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
-
-        .ttr-help {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: var(--primary-soft);
-            color: var(--primary-dark);
-            font-size: 0.65rem;
-            font-weight: 700;
-            cursor: help;
-            vertical-align: middle;
-            margin-left: 3px;
-        }
-        .ttr-help:hover { background: var(--accent); color: white; }
-
-        /* ── Frequency bars ── */
-        .freq-section { margin-top: 1.5rem; }
-        .freq-row {
-            display: flex;
-            align-items: center;
-            gap: 0.6rem;
-            margin-bottom: 0.35rem;
-            font-size: 0.82rem;
-        }
-        .freq-word {
-            min-width: 130px;
-            max-width: 130px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: var(--text-main);
-        }
-        .freq-bar-bg {
-            flex: 1;
-            background: var(--primary-soft);
-            border-radius: 3px;
-            height: 8px;
-        }
-        .freq-bar {
-            height: 8px;
-            background: var(--accent);
-            border-radius: 3px;
-            transition: width 0.3s ease;
-        }
-        .freq-count { color: var(--text-muted); font-size: 0.75rem; min-width: 28px; text-align: right; }
-
-        /* ── Table ── */
-        .section-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.8rem; }
-
-        .table-wrap {
-            overflow-x: auto;
-            background: white;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            margin-bottom: 0.5rem;
-        }
-
-        table { width: 100%; border-collapse: collapse; font-size: 0.83rem; }
-
-        th {
-            background: var(--primary-soft);
-            color: var(--primary-dark);
-            padding: 0.55rem 0.75rem;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--primary);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 0.45rem 0.75rem;
-            border-bottom: 1px solid var(--border);
-            max-width: 280px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        tr:last-child td { border-bottom: none; }
-        tr:hover td { background: var(--primary-soft); }
-
-        td[contenteditable] { cursor: text; }
-        td[contenteditable]:hover { background: var(--accent-soft); }
-        td[contenteditable]:focus {
-            outline: none;
-            background: var(--accent-soft);
-            box-shadow: inset 0 0 0 1px var(--accent);
-            white-space: normal;
-            overflow: visible;
-            max-width: none;
-        }
-
-        .table-note { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.3rem; }
-
-        /* ── Export buttons ── */
-        .export-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 0.7rem;
-        }
-
-        .btn-export {
-            padding: 0.6rem;
-            border: 1px solid var(--accent);
-            border-radius: 6px;
-            background: var(--accent);
-            color: white;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.18s;
-        }
-
-        .btn-export:hover {
-            background: var(--accent);
-            color: white;
-            border-color: var(--accent);
-            filter: brightness(0.92);
-        }
-
-        .btn-export-stats {
-            display: block;
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px dashed var(--accent);
-            border-radius: 6px;
-            background: var(--accent-soft);
-            cursor: pointer;
-            font-size: 0.82rem;
-            color: var(--accent);
-            margin-top: 0.55rem;
-            transition: all 0.18s;
-        }
-        .btn-export-stats:hover { border-color: var(--accent); color: white; background: var(--accent); }
-
-        .divider { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
-
-        /* ── About button ── */
-        .about-btn {
-            background: none;
-            border: 1px solid var(--text-muted);
-            border-radius: 20px;
-            padding: 0.2rem 0.7rem;
-            font-size: 0.78rem;
-            color: var(--primary-dark);
-            cursor: pointer;
-            margin-left: 0.6rem;
-            vertical-align: middle;
-            transition: all 0.15s;
-        }
-        .about-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-        /* ── Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.45);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-overlay.open { display: flex; }
-
-        .modal-box {
-            background: white;
-            border-radius: 10px;
-            padding: 2rem 2.2rem;
-            max-width: 620px;
-            width: 90%;
-            max-height: 85vh;
-            overflow-y: auto;
-            position: relative;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 1rem;
-            right: 1.2rem;
-            background: none;
-            border: none;
-            font-size: 1.3rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            line-height: 1;
-        }
-        .modal-close:hover { color: var(--accent); }
-
-        .modal-title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 1.3rem;
-        }
-
-        .name-layer {
-            display: flex;
-            gap: 1rem;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-        }
-        .name-tag {
-            background: var(--primary);
-            color: white;
-            font-weight: 700;
-            font-size: 0.78rem;
-            border-radius: 4px;
-            padding: 0.2rem 0.5rem;
-            white-space: nowrap;
-            margin-top: 0.1rem;
-            flex-shrink: 0;
-        }
-        .name-tag.alt { background: var(--primary-dark); }
-        .name-tag.soft { background: var(--accent); }
-
-        .name-layer p {
-            font-size: 0.88rem;
-            line-height: 1.55;
-            color: var(--text-main);
-        }
-        .name-layer p strong { color: var(--primary-dark); }
-
-        .modal-section {
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.07em;
-            margin: 1.4rem 0 0.7rem;
-        }
-
-        .bio-text {
-            font-size: 0.88rem;
-            line-height: 1.65;
-            color: var(--text-main);
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -530,15 +40,8 @@
         <div class="field-label">Etiqueta de contenido</div>
         <input type="text" id="content-key" value="texto">
 
-        <label style="margin-top:0.55rem">
-            <input type="checkbox" id="use-labels" onchange="document.getElementById('labels-input').hidden = !this.checked">
-            Añadir etiquetas de metadatos
-            <span class="ttr-help" title="Opcional. Añade columnas vacías para anotar cada ítem. Escribe las etiquetas separadas por comas. Ejemplo: sentimiento, categoria, dificultad">?</span>
-        </label>
-        <input type="text" id="labels-input" value="sentimiento, categoria" hidden>
-
         <div class="field-label">Nombre del archivo de salida</div>
-        <input type="text" id="output-name" value="dataset_procesado">
+        <input type="text" id="output-name" value="corpus">
     </div>
 </div>
 
@@ -581,23 +84,84 @@
     </div>
 </div>
 
+<!-- ══════════════════════════════ GUIDE MODAL ══════════════════════════════ -->
+<div id="guide-modal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
+    <div class="modal-box guide">
+        <button class="modal-close" onclick="document.getElementById('guide-modal').classList.remove('open')">✕</button>
+
+        <div class="modal-title">Guía de uso</div>
+
+        <p>IS-A-BUILDER convierte textos en un corpus estructurado: una tabla en la que cada fila es un fragmento de texto (una oración o un documento completo) acompañado de su fuente y, si quieres, de las etiquetas de metadatos que necesites para anotarlo. Todo se procesa en tu navegador: los textos no se envían a ningún servidor.</p>
+
+        <div class="modal-section">1. Añade los textos</div>
+        <ul>
+            <li><strong>Subir archivos:</strong> haz clic en la zona de carga o arrastra los archivos. Puedes subir varios a la vez, en formato <code>.txt</code> o <code>.html</code>.</li>
+            <li><strong>Páginas web:</strong> guarda la página desde el navegador (<em>Archivo → Guardar como</em>) y sube el <code>.html</code>. Sirve para artículos de Wikipedia, noticias de prensa digital como <em>El País</em> y páginas similares. La herramienta extrae los párrafos del texto principal y descarta tablas, imágenes y otros elementos que no son texto corrido. En Wikipedia descarta además las fichas, las llamadas a notas y la sección de referencias.</li>
+            <li><strong>Pegar texto:</strong> en la pestaña <em>Pegar texto</em> puedes escribir o pegar directamente. Si además hay archivos subidos, se procesan todos juntos.</li>
+        </ul>
+
+        <div class="modal-section">2. Elige la configuración</div>
+        <p>Las opciones están en la barra lateral:</p>
+        <ul>
+            <li><strong>Tokenización por oraciones:</strong> cada oración ocupa una fila. Si la desactivas, cada archivo (o el texto pegado) ocupa una sola fila. Se respetan abreviaturas habituales como <em>Sr.</em>, <em>etc.</em> o <em>pág.</em></li>
+            <li><strong>Normalizar a minúscula:</strong> pasa todo el texto a minúsculas.</li>
+            <li><strong>Eliminar palabras funcionales:</strong> quita artículos, preposiciones, conjunciones, pronombres y otras palabras gramaticales (en español o inglés, según el idioma detectado). Resulta útil para centrar las frecuencias en el vocabulario léxico, pero el texto resultante ya no es legible como tal.</li>
+            <li><strong>Etiqueta de contenido:</strong> nombre de la columna que contiene el texto (por defecto, <code>texto</code>).</li>
+            <li><strong>Nombre del archivo de salida:</strong> nombre base de las descargas (por defecto, <code>corpus</code>).</li>
+        </ul>
+        <p>Después, pulsa <strong>▶ Procesar</strong>.</p>
+
+        <div class="modal-section">3. Revisa y anota el corpus</div>
+        <ul>
+            <li><strong>Métricas:</strong> número de filas, <em>TTR</em> (proporción entre palabras distintas y palabras totales; cuanto más alta, más variedad léxica) y porcentaje de <em>hapax</em> (palabras que aparecen una sola vez).</li>
+            <li><strong>Vista previa:</strong> muestra las primeras 15 filas. Haz clic en una celda para corregirla; los cambios se incluyen al exportar.</li>
+            <li><strong>Etiquetas de metadatos:</strong> escribe un nombre (por ejemplo, <code>tema</code>) y pulsa <em>Añadir etiqueta</em> o Enter. Para añadir varias a la vez, sepáralas con punto y coma (<code>tema; registro; autor</code>). Se crea una columna vacía para cada una, que puedes rellenar en la vista previa. Para quitar una etiqueta, pulsa la × de su cabecera.</li>
+        </ul>
+        <p class="guide-tip">Si el corpus tiene más de 15 filas, lo más cómodo es añadir aquí las etiquetas, exportar a CSV y anotarlo en una hoja de cálculo.</p>
+
+        <div class="modal-section">4. Consulta las frecuencias</div>
+        <p>Se muestran las diez palabras más frecuentes. La lista completa de frecuencias absolutas se descarga en CSV o Excel (la descarga en Excel necesita conexión a internet).</p>
+
+        <div class="modal-section">5. Exporta</div>
+        <ul>
+            <li><strong>JSON:</strong> todo el corpus en un único archivo estructurado; habitual en programación.</li>
+            <li><strong>JSONL:</strong> un registro JSON por línea; es el formato más común para entrenar o evaluar modelos de lenguaje.</li>
+            <li><strong>CSV:</strong> tabla que se abre en Excel, LibreOffice o Google Sheets; cómoda para anotar a mano.</li>
+            <li><strong>XML:</strong> cada fragmento como un <code>&lt;documento&gt;</code> dentro de un <code>&lt;corpus&gt;</code>. Las etiquetas vacías aparecen como <code>PENDIENTE</code>.</li>
+            <li><strong>TXT:</strong> solo el texto, un fragmento por línea, listo para herramientas de lingüística de corpus como AntConc.</li>
+            <li><strong>Estadísticas descriptivas (JSON):</strong> métricas del corpus y lista completa de frecuencias.</li>
+        </ul>
+
+        <div class="modal-section">Ten en cuenta</div>
+        <ul>
+            <li>Si cambias la configuración y vuelves a procesar, se genera un corpus nuevo y se pierden las etiquetas y ediciones hechas en la vista previa. Exporta antes lo que quieras conservar.</li>
+            <li>La herramienta no guarda nada: al recargar o cerrar la página, el trabajo se pierde.</li>
+        </ul>
+    </div>
+</div>
+
 <!-- ══════════════════════════════ MAIN ══════════════════════════════ -->
 <div id="main">
     <div class="app-title">
         <strong>IS-A-BUILDER</strong>: conversor de texto a datos estructurados
         <button class="about-btn" onclick="document.getElementById('about-modal').classList.add('open')">¿Por qué este nombre?</button>
     </div>
-    <div class="app-caption">© Isabel Moyano Moreno | 2026 | Versión 2.0</div>
+    <div class="app-caption">© Isabel Moyano Moreno | 2026 | Versión 2.0
+        <button class="about-btn guide-btn" onclick="document.getElementById('guide-modal').classList.add('open')">Guía de uso</button>
+    </div>
 
     <div class="description">
-        En el <strong>procesamiento del lenguaje natural (PLN)</strong>, la calidad de los modelos —desde clasificadores
-        más clásicos hasta los recientes grandes modelos de lenguaje (LLM)— depende directamente de la compilación,
-        estructura y limpieza del corpus lingüístico o <em>dataset</em>.
+        En <strong>lingüística de corpus</strong>, el análisis empieza antes de contar palabras: los textos deben
+        compilarse, limpiarse, segmentarse y anotarse con metadatos para que el corpus pueda consultarse y compararse.
+        De esa preparación depende la fiabilidad de las frecuencias, de las medidas de riqueza léxica y de cualquier
+        análisis posterior. Es también la base de los <em>datasets</em> del procesamiento del lenguaje natural (PLN),
+        desde clasificadores clásicos hasta los grandes modelos de lenguaje (LLM).
         <br><br>
         <strong>IS-A-BUILDER</strong> ha sido diseñado específicamente como un recurso pedagógico para estudiantes y
-        personas curiosas e interesadas en el PLN. Esta herramienta facilita la transición del texto plano
-        (<code>.txt</code>) a formatos estructurados (<strong>JSON, JSONL, CSV, XML</strong>), permitiendo una
-        preparación de datos acorde a los estándares en PLN.
+        personas curiosas e interesadas en el PLN y la lingüística de corpus. Esta herramienta facilita la
+        transición del texto plano (<code>.txt</code>) o de páginas web (<code>.html</code>) a formatos
+        estructurados (<strong>JSON, JSONL, CSV, XML</strong>), permitiendo una preparación de datos acorde a los
+        estándares en PLN y en lingüística de corpus.
     </div>
 
     <hr class="divider">
@@ -614,7 +178,7 @@
             <input type="file" id="file-input" accept=".txt,.html,.htm" multiple onchange="handleFiles(this.files)">
             <div class="upload-icon">📂</div>
             <p><strong>Haz clic para seleccionar archivos</strong></p>
-            <p>o arrastra y suelta aquí — archivos .txt o .html (p. ej., artículos de Wikipedia guardados), múltiples permitidos</p>
+            <p>o arrastra y suelta aquí — archivos .txt o .html (p. ej., páginas de Wikipedia o de prensa guardadas), múltiples permitidos</p>
         </div>
         <div id="file-list"></div>
     </div>
@@ -630,467 +194,7 @@
     </div>
 </div>
 
-<script>
-'use strict';
-
-// ── State ──
-let uploadedFiles = [];
-
-// ── Tabs ──
-function switchTab(tab) {
-    document.querySelectorAll('.tab-btn').forEach((b, i) => {
-        b.classList.toggle('active', (tab === 'upload' && i === 0) || (tab === 'paste' && i === 1));
-    });
-    document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
-    document.getElementById('tab-paste').classList.toggle('active', tab === 'paste');
-}
-
-// ── Drag & drop ──
-function dragOver(e) {
-    e.preventDefault();
-    document.getElementById('drop-zone').classList.add('drag-over');
-}
-
-function dragLeave() {
-    document.getElementById('drop-zone').classList.remove('drag-over');
-}
-
-function drop(e) {
-    e.preventDefault();
-    document.getElementById('drop-zone').classList.remove('drag-over');
-    const validFiles = Array.from(e.dataTransfer.files).filter(f => /\.(txt|html?)$/i.test(f.name));
-    if (validFiles.length) handleFiles(validFiles);
-}
-
-function handleFiles(files) {
-    uploadedFiles = Array.from(files);
-    document.getElementById('file-list').innerHTML =
-        uploadedFiles.map(f => `<div>${esc(f.name)}</div>`).join('');
-}
-
-// ── File reading with encoding fallback ──
-async function readFileText(file) {
-    const buf = await file.arrayBuffer();
-    try {
-        return new TextDecoder('utf-8', { fatal: true }).decode(buf);
-    } catch {
-        return new TextDecoder('iso-8859-1').decode(buf);
-    }
-}
-
-// ── HTML text extraction (optimizado para Wikipedia) ──
-// Elementos que no forman parte del texto corrido del artículo
-const HTML_NOISE = [
-    'script', 'style', 'noscript', 'table', 'figure', 'math',
-    'sup.reference', '.mw-editsection', '.infobox', '.navbox', '.thumb',
-    '.gallery', '.hatnote', '.noprint', '.toc', '#toc', '.reflist',
-    '.listaref', '.references', '.metadata', '.ambox', '.mw-empty-elt'
-].join(', ');
-
-// Secciones finales que no aportan texto corrido
-const HTML_END_SECTIONS = /^(notas|referencias|bibliograf[ií]a|v[eé]ase también|enlaces externos|notes|references|bibliography|see also|external links|further reading)$/i;
-
-function extractTextFromHTML(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const root = doc.querySelector('#mw-content-text .mw-parser-output')
-              || doc.querySelector('article, main, [role="main"]')
-              || doc.body;
-
-    // Cortar desde la primera sección final (Referencias, Véase también...)
-    const endHeading = Array.from(root.querySelectorAll('h2'))
-        .find(h => HTML_END_SECTIONS.test(h.textContent.trim()));
-    if (endHeading) {
-        let el = endHeading.closest('.mw-heading') || endHeading;
-        while (el.parentElement && el.parentElement !== root) el = el.parentElement;
-        while (el) { const next = el.nextElementSibling; el.remove(); el = next; }
-    }
-
-    root.querySelectorAll(HTML_NOISE).forEach(el => el.remove());
-
-    return Array.from(root.querySelectorAll('p'))
-        .map(p => p.textContent.replace(/\s+/g, ' ').trim())
-        .filter(Boolean)
-        .join('\n\n');
-}
-
-// ── Text processing ──
-const FUNCTION_WORDS_ES = new Set([
-    // Español
-    'a', 'acá', 'ahí', 'al', 'algo', 'algunas', 'algunos', 'allá', 'allí',
-    'ambos', 'ante', 'antes', 'aquel', 'aquella', 'aquellas', 'aquello',
-    'aquellos', 'aquí', 'cada', 'como', 'con', 'contra', 'cual', 'cuales',
-    'cuando', 'cuanto', 'cuanta', 'cuantos', 'cuantas', 'de', 'del', 'desde',
-    'donde', 'dos', 'durante', 'e', 'el', 'él', 'ella', 'ellas', 'ello',
-    'ellos', 'en', 'entre', 'era', 'erais', 'eran', 'eras', 'eres', 'es',
-    'esa', 'esas', 'ese', 'eso', 'esos', 'esta', 'estaba', 'estabais',
-    'estaban', 'estabas', 'estad', 'estada', 'estadas', 'estado', 'estados',
-    'estamos', 'estando', 'estar', 'estaremos', 'estará', 'estarán',
-    'estarás', 'estaré', 'estaréis', 'estaría', 'estaríais', 'estaríamos',
-    'estarían', 'estarías', 'estas', 'este', 'estemos', 'esto', 'estos',
-    'estoy', 'estuve', 'estuviera', 'estuvierais', 'estuvieran', 'estuvieras',
-    'estuvieron', 'estuviese', 'estuvieseis', 'estuviesen', 'estuvieses',
-    'estuvimos', 'estuviste', 'estuvisteis', 'estuviéramos', 'estuviésemos',
-    'estuvo', 'está', 'estábamos', 'estáis', 'están', 'estás', 'esté',
-    'estéis', 'estén', 'estés', 'fue', 'fuera', 'fuerais', 'fueran',
-    'fueras', 'fueron', 'fuese', 'fueseis', 'fuesen', 'fueses', 'fui',
-    'fuimos', 'fuiste', 'fuisteis', 'fuéramos', 'fuésemos', 'ha', 'habida',
-    'habidas', 'habido', 'habidos', 'habiendo', 'habremos', 'habrá',
-    'habrán', 'habrás', 'habré', 'habréis', 'habría', 'habríais',
-    'habríamos', 'habrían', 'habrías', 'habéis', 'había', 'habíais',
-    'habíamos', 'habían', 'habías', 'han', 'has', 'hasta', 'hay', 'haya',
-    'hayamos', 'hayan', 'hayas', 'hayáis', 'he', 'hemos', 'hube', 'hubiera',
-    'hubierais', 'hubieran', 'hubieras', 'hubieron', 'hubiese', 'hubieseis',
-    'hubiesen', 'hubieses', 'hubimos', 'hubiste', 'hubisteis', 'hubiéramos',
-    'hubiésemos', 'hubo', 'la', 'las', 'le', 'les', 'lo', 'los', 'más',
-    'me', 'mi', 'mis', 'mucha', 'muchas', 'mucho', 'muchos', 'muy', 'mí',
-    'mía', 'mías', 'mío', 'míos', 'nada', 'ni', 'no', 'nos', 'nosotras',
-    'nosotros', 'nuestra', 'nuestras', 'nuestro', 'nuestros', 'o', 'os',
-    'otra', 'otras', 'otro', 'otros', 'para', 'pero', 'poco', 'por',
-    'porque', 'que', 'qué', 'quien', 'quienes', 'se', 'sea', 'seamos',
-    'sean', 'seas', 'seremos', 'será', 'serán', 'serás', 'seré', 'seréis',
-    'sería', 'seríais', 'seríamos', 'serían', 'serías', 'seáis', 'sido',
-    'siendo', 'sin', 'sobre', 'sois', 'somos', 'son', 'soy', 'su', 'sus',
-    'suya', 'suyas', 'suyo', 'suyos', 'sí', 'también', 'tanto', 'te',
-    'tendremos', 'tendrá', 'tendrán', 'tendrás', 'tendré', 'tendréis',
-    'tendría', 'tendríais', 'tendríamos', 'tendrían', 'tendrías', 'tened',
-    'tenemos', 'tenga', 'tengamos', 'tengan', 'tengas', 'tengo', 'tengáis',
-    'tenida', 'tenidas', 'tenido', 'tenidos', 'teniendo', 'tenéis', 'tenía',
-    'teníais', 'teníamos', 'tenían', 'tenías', 'ti', 'tiene', 'tienen',
-    'tienes', 'todo', 'todos', 'tu', 'tus', 'tuve', 'tuviera', 'tuvierais',
-    'tuvieran', 'tuvieras', 'tuvieron', 'tuviese', 'tuvieseis', 'tuviesen',
-    'tuvieses', 'tuvimos', 'tuviste', 'tuvisteis', 'tuviéramos',
-    'tuviésemos', 'tuvo', 'tuya', 'tuyas', 'tuyo', 'tuyos', 'tú', 'un',
-    'una', 'uno', 'unos', 'vosotras', 'vosotros', 'vuestra', 'vuestras',
-    'vuestro', 'vuestros', 'y', 'ya', 'yo'
-]);
-
-const FUNCTION_WORDS_EN = new Set([
-    // English
-    'a', 'about', 'above', 'after', 'again', 'against', 'all', 'am', 'an',
-    'and', 'any', 'are', 'as', 'at', 'be', 'because', 'been', 'before',
-    'being', 'below', 'between', 'both', 'but', 'by', 'can', 'could', 'did',
-    'do', 'does', 'doing', 'down', 'during', 'each', 'few', 'for', 'from',
-    'further', 'had', 'has', 'have', 'having', 'he', 'her', 'here', 'hers',
-    'herself', 'him', 'himself', 'his', 'how', 'i', 'if', 'in', 'into',
-    'is', 'it', 'its', 'itself', 'just', 'me', 'more', 'most', 'my',
-    'myself', 'no', 'nor', 'not', 'now', 'of', 'off', 'on', 'once', 'only',
-    'or', 'other', 'our', 'ours', 'ourselves', 'out', 'over', 'own', 'same',
-    'she', 'should', 'so', 'some', 'such', 'than', 'that', 'the', 'their',
-    'theirs', 'them', 'themselves', 'then', 'there', 'these', 'they', 'this',
-    'those', 'through', 'to', 'too', 'under', 'until', 'up', 'very', 'was',
-    'we', 'were', 'what', 'when', 'where', 'which', 'while', 'who', 'whom',
-    'why', 'will', 'with', 'would', 'you', 'your', 'yours', 'yourself',
-    'yourselves'
-]);
-
-function normalizeToken(token) {
-    return token
-        .toLowerCase()
-        .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, '');
-}
-
-function detectStopwordLanguage(tokens) {
-    const scores = tokens.reduce((acc, token) => {
-        if (FUNCTION_WORDS_ES.has(token)) acc.es += 1;
-        if (FUNCTION_WORDS_EN.has(token)) acc.en += 1;
-        return acc;
-    }, { es: 0, en: 0 });
-    return scores.en > scores.es ? 'en' : 'es';
-}
-
-function removeFunctionWords(text) {
-    const tokens = text.split(/\s+/);
-    const normalizedTokens = tokens.map(normalizeToken).filter(Boolean);
-    const language = detectStopwordLanguage(normalizedTokens);
-    const functionWords = language === 'en' ? FUNCTION_WORDS_EN : FUNCTION_WORDS_ES;
-
-    return text
-        .split(/\s+/)
-        .filter(token => {
-            const normalized = normalizeToken(token);
-            return normalized && !functionWords.has(normalized);
-        })
-        .join(' ');
-}
-
-function cleanText(text, lowercase, removeStopwords) {
-    if (lowercase) text = text.toLowerCase();
-    if (removeStopwords) text = removeFunctionWords(text);
-    return text;
-}
-
-function tokenizeSentences(text) {
-    // Protect common Spanish/academic abbreviations
-    const abbrevs = ['Sr', 'Sra', 'Dr', 'Dra', 'Prof', 'Profa', 'etc', 'vs',
-                     'núm', 'pág', 'págs', 'art', 'fig', 'cap', 'vol', 'ed',
-                     'pp', 'p', 'ej', 'al', 'ibid', 'cf', 'op'];
-    let t = text;
-    abbrevs.forEach(a => {
-        t = t.replace(new RegExp(`\\b${a}\\.`, 'gi'), m => m.slice(0, -1) + '\x01');
-    });
-
-    // Split at sentence boundaries: .!? optionally followed by closing quote, then space + uppercase
-    const parts = t.split(/(?<=[.!?][»"']?)\s+(?=[A-ZÁÉÍÓÚÜÑ¿¡"'«(])/);
-    return parts.map(s => s.replace(/\x01/g, '.').trim()).filter(Boolean);
-}
-
-// ── Main processing ──
-async function processData() {
-    const segBySentences = document.getElementById('segment-sentences').checked;
-    const lowercase      = document.getElementById('do-lowercase').checked;
-    const removeStopwords = document.getElementById('do-remove-stopwords').checked;
-    const contentKey     = document.getElementById('content-key').value.trim() || 'texto';
-    const useLabels      = document.getElementById('use-labels').checked;
-    const labelsRaw      = useLabels ? document.getElementById('labels-input').value : '';
-    const labelKeys      = labelsRaw.split(',').map(l => l.trim()).filter(Boolean);
-
-    const rawData = [];
-
-    for (const file of uploadedFiles) {
-        let content = await readFileText(file);
-        if (/\.html?$/i.test(file.name)) content = extractTextFromHTML(content);
-        content = cleanText(content, lowercase, removeStopwords);
-        const chunks = segBySentences ? tokenizeSentences(content) : [content];
-        chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: file.name, contenido: s.trim() }); });
-    }
-
-    const manualText = document.getElementById('manual-text').value;
-    if (manualText.trim()) {
-        let content = cleanText(manualText, lowercase, removeStopwords);
-        const chunks = segBySentences ? tokenizeSentences(content) : [content];
-        chunks.forEach(s => { if (s.trim()) rawData.push({ fuente: 'entrada_manual', contenido: s.trim() }); });
-    }
-
-    renderResults(rawData, contentKey, labelKeys);
-}
-
-// ── Render ──
-function renderResults(rawData, contentKey, labelKeys) {
-    const resultsDiv = document.getElementById('results');
-
-    if (!rawData.length) {
-        resultsDiv.innerHTML = '<div class="info-banner">Sube archivos o pega texto para generar el dataset estructurado.</div>';
-        return;
-    }
-
-    const dataset = rawData.map((item, i) => {
-        const row = { id_registro: i + 1, fuente: item.fuente };
-        row[contentKey] = item.contenido;
-        labelKeys.forEach(k => { row[k] = ''; });
-        return row;
-    });
-
-    const fullText   = dataset.map(r => r[contentKey]).join(' ');
-    const allTokens  = fullText.split(/\s+/).filter(Boolean);
-    const totalWords = allTokens.length;
-    const totalChars = fullText.length;
-
-    const freqMap = {};
-    allTokens.forEach(t => { const w = normalizeToken(t); if (w) freqMap[w] = (freqMap[w] || 0) + 1; });
-    const freqList   = Object.entries(freqMap).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'));
-    const uniqueTypes = freqList.length;
-    const ttr         = totalWords > 0 ? (uniqueTypes / totalWords) : 0;
-    const hapaxCount  = freqList.filter(([, c]) => c === 1).length;
-    const hapaxRatio  = uniqueTypes > 0 ? hapaxCount / uniqueTypes : 0;
-    const top10       = freqList.slice(0, 10);
-    const top20       = freqList.slice(0, 20);
-
-    const columns  = ['id_registro', 'fuente', contentKey, ...labelKeys];
-    const preview  = dataset.slice(0, 15);
-
-    const tableRows = preview.map((row, rowIdx) =>
-        `<tr>${columns.map(c => {
-            const val = esc(String(row[c] ?? ''));
-            if (c === 'id_registro') return `<td>${val}</td>`;
-            return `<td contenteditable="true" data-row="${rowIdx}" data-col="${esc(c)}" title="${val}">${val}</td>`;
-        }).join('')}</tr>`
-    ).join('');
-
-    const moreNote = dataset.length > 15
-        ? `<p class="table-note">Mostrando 15 de ${dataset.length} ítems.</p>` : '';
-
-    resultsDiv.innerHTML = `
-        <div class="success-box">Procesamiento completado: <strong>${dataset.length}</strong> ítems generados.</div>
-
-        <div class="metrics">
-            <div class="metric-card">
-                <div class="metric-value">${dataset.length.toLocaleString('es')}</div>
-                <div class="metric-label">Filas</div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">${(ttr).toFixed(3)}</div>
-                <div class="metric-label">TTR <span class="ttr-help" title="Type-Token Ratio: cociente entre el número de tipos (palabras únicas) y el total de tokens. Mide la riqueza léxica del corpus. Un valor cercano a 1 indica alta variedad; cercano a 0, mucha repetición.">?</span></div>
-            </div>
-            <div class="metric-card">
-                <div class="metric-value">${(hapaxRatio * 100).toFixed(1)}%</div>
-                <div class="metric-label">Hapax <span class="ttr-help" title="Porcentaje de hapax legomena: palabras que aparecen una sola vez en el corpus. Un valor alto indica riqueza léxica o escasez de datos de entrenamiento.">?</span></div>
-            </div>
-        </div>
-
-        <div class="section-title">Vista previa del dataset</div>
-        <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.5rem;">Haz clic en cualquier celda para editarla directamente. Los cambios se incluyen en la exportación — o descarga el dataset tal cual y anótalo fuera de esta herramienta.</p>
-        <div class="table-wrap">
-            <table id="preview-table">
-                <thead><tr>${columns.map(c => `<th>${esc(c)}</th>`).join('')}</tr></thead>
-                <tbody>${tableRows}</tbody>
-            </table>
-        </div>
-        ${moreNote}
-
-        <hr class="divider">
-        <div class="section-title">Palabras más frecuentes</div>
-        <div class="freq-section">
-            ${top10.map(([w, c]) => `
-            <div class="freq-row">
-                <span class="freq-word" title="${esc(w)}">${esc(w)}</span>
-                <div class="freq-bar-bg"><div class="freq-bar" style="width:${(c / top10[0][1] * 100).toFixed(1)}%"></div></div>
-                <span class="freq-count">${c}</span>
-            </div>`).join('')}
-        </div>
-        <p class="table-note" style="margin:0.8rem 0 0">Frecuencias absolutas de las ${uniqueTypes.toLocaleString('es')} palabras distintas:</p>
-        <div class="export-grid" style="grid-template-columns:repeat(2, 1fr)">
-            <button class="btn-export-stats" onclick="exportFreqCSV()">Descargar frecuencias (CSV)</button>
-            <button class="btn-export-stats" onclick="exportFreqXLSX()">Descargar frecuencias (Excel)</button>
-        </div>
-
-        <hr class="divider">
-        <div class="section-title">Exportar dataset</div>
-        <div class="export-grid">
-            <button class="btn-export" onclick="exportJSON()">JSON</button>
-            <button class="btn-export" onclick="exportJSONL()">JSONL</button>
-            <button class="btn-export" onclick="exportCSV()">CSV</button>
-            <button class="btn-export" onclick="exportXML()">XML</button>
-            <button class="btn-export" onclick="exportXLSX()">Excel</button>
-        </div>
-        <button class="btn-export-stats" onclick="exportStats()">Descargar estadísticas descriptivas (JSON)</button>
-    `;
-
-    window._ds         = dataset;
-    window._contentKey = contentKey;
-    window._labelKeys  = labelKeys;
-    window._columns    = columns;
-    window._stats      = {
-        total_filas:           dataset.length,
-        total_tokens:          totalWords,
-        total_caracteres:      totalChars,
-        types:                 uniqueTypes,
-        ttr:                   parseFloat(ttr.toFixed(4)),
-        hapax_legomena:        hapaxCount,
-        hapax_ratio:           parseFloat(hapaxRatio.toFixed(4)),
-        top_20_frecuencias:    top20.map(([w, c]) => ({ palabra: w, frecuencia: c })),
-        lista_frecuencias:     freqList.map(([w, c]) => ({ palabra: w, frecuencia: c })),
-    };
-}
-
-// ── Helpers ──
-function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function escXml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-             .replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-}
-
-function download(content, filename, mime) {
-    const url = URL.createObjectURL(new Blob([content], { type: mime }));
-    Object.assign(document.createElement('a'), { href: url, download: filename }).click();
-    URL.revokeObjectURL(url);
-}
-
-function outName() {
-    return document.getElementById('output-name').value.trim() || 'dataset_procesado';
-}
-
-// ── Export ──
-function exportJSON() {
-    download(JSON.stringify(window._ds, null, 4), `${outName()}.json`, 'application/json');
-}
-
-function exportJSONL() {
-    download(window._ds.map(r => JSON.stringify(r)).join('\n'), `${outName()}.jsonl`, 'application/jsonl');
-}
-
-function exportCSV() {
-    const cols = window._columns;
-    const rows = window._ds.map(r => cols.map(c => `"${String(r[c] ?? '').replace(/"/g,'""')}"`).join(','));
-    download([cols.join(','), ...rows].join('\n'), `${outName()}.csv`, 'text/csv;charset=utf-8');
-}
-
-function syncCell(e) {
-    const td = e.target.closest('td[contenteditable]');
-    if (!td) return;
-    const row = parseInt(td.dataset.row);
-    const col = td.dataset.col;
-    if (!isNaN(row) && col && window._ds) {
-        window._ds[row][col] = td.innerText;
-    }
-}
-
-document.addEventListener('input', syncCell);
-
-function exportFreqCSV() {
-    const rows = window._stats.lista_frecuencias.map(({ palabra, frecuencia }, i) =>
-        `${i + 1},"${palabra.replace(/"/g,'""')}",${frecuencia}`);
-    // BOM para que Excel reconozca UTF-8 (tildes, ñ)
-    download('\uFEFF' + ['rango,palabra,frecuencia_absoluta', ...rows].join('\n'),
-             `${outName()}_frecuencias.csv`, 'text/csv;charset=utf-8');
-}
-
-// SheetJS se carga solo al exportar a Excel (requiere conexión la primera vez)
-let xlsxLoading = null;
-function loadXLSX() {
-    if (window.XLSX) return Promise.resolve(window.XLSX);
-    xlsxLoading ??= new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = 'https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js';
-        script.onload = () => resolve(window.XLSX);
-        script.onerror = () => { xlsxLoading = null; reject(); };
-        document.head.appendChild(script);
-    });
-    return xlsxLoading;
-}
-
-async function downloadXLSX(rows, header, sheetName, filename) {
-    try {
-        const XLSX = await loadXLSX();
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows, { header }), sheetName);
-        XLSX.writeFile(wb, filename);
-    } catch {
-        alert('No se pudo cargar el generador de Excel. Comprueba tu conexión o exporta en CSV.');
-    }
-}
-
-function exportXLSX() {
-    downloadXLSX(window._ds, window._columns, 'dataset', `${outName()}.xlsx`);
-}
-
-function exportFreqXLSX() {
-    const rows = window._stats.lista_frecuencias.map(({ palabra, frecuencia }, i) =>
-        ({ rango: i + 1, palabra, frecuencia_absoluta: frecuencia }));
-    downloadXLSX(rows, ['rango', 'palabra', 'frecuencia_absoluta'], 'frecuencias', `${outName()}_frecuencias.xlsx`);
-}
-
-function exportStats() {
-    download(JSON.stringify(window._stats, null, 4), `${outName()}_estadisticas.json`, 'application/json');
-}
-
-function exportXML() {
-    const ck  = window._contentKey;
-    const lks = window._labelKeys;
-    const lines = ['<?xml version="1.0" encoding="UTF-8"?>', '<corpus>'];
-    for (const item of window._ds) {
-        lines.push('  <documento>');
-        lines.push(`    <id_registro>${escXml(String(item.id_registro))}</id_registro>`);
-        lines.push(`    <${escXml(ck)}>${escXml(String(item[ck] ?? ''))}</${escXml(ck)}>`);
-        lines.push(`    <fuente>${escXml(String(item.fuente ?? ''))}</fuente>`);
-        lks.forEach(k => lines.push(`    <${escXml(k)}>PENDIENTE</${escXml(k)}>`));
-        lines.push('  </documento>');
-    }
-    lines.push('</corpus>');
-    download(lines.join('\n'), `${outName()}.xml`, 'application/xml');
-}
-</script>
+<script src="stopwords.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
